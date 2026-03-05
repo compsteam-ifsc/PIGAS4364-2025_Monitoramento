@@ -1,0 +1,116 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #f4f5f7;
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+  color: white;
+  height: 100vh;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px;
+  display: block;
+  transition: background 0.3s;
+}
+
+.sidebar a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.sidebar .upgrade {
+  margin-top: auto;
+  background: rgba(255,255,255,0.2);
+  text-align: center;
+}
+
+/* Main Content */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Cards */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+h3 {
+  margin-top: 0;
+  font-weight: 500;
+}
+
+/* Pie Chart */
+.pie {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(#5bc0de 0 53%, #f7464a 53% 89%, #f4b400 89% 100%);
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Bar Chart */
+.bar-chart, .line-chart {
+  height: 200px;
+  background: #e1e1e1;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.bar {
+  width: 20px;
+  background: #5bc0de;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Tasks */
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.task input[type="checkbox"] {
+  margin-right: 10px;
+}

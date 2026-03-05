@@ -1,1 +1,0 @@
-# PIGAS4364-2025_Monitoramento
