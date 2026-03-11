@@ -1,52 +1,25 @@
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
-<link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
-<body>
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script src="JS/chart.js"></script>
+  <script src="JS/script.js"></script>
+  </head>
+  <body>
 
 
 
-<div class="main">
-  <div class="cards-container">
-    <!-- Email Statistics -->
-    <div class="card">
-      <h3>Email Statistics</h3>
-      <p>Last Campaign Performance</p>
-      <div class="pie">53%</div>
-      <p>Open: 53%, Bounce: 36%, Unsubscribe: 11%</p>
-      <small>Campaign sent 2 days ago</small>
-    </div>
+  
 
-    <!-- User Behavior -->
-    <div class="card">
-      <h3>Users Behavior</h3>
-      <p>24 Hours Performance</p>
-      <div class="line-chart">
-    
+      <div class="card">
+        <canvas id="barChart" width="600" height="300"></canvas>
       </div>
-      <small>Updated 3 minutes ago</small>
-    </div>
-
-    <div class="card">
-      <h3>2017 Sales</h3>
-      <p>All products including Taxes</p>
-      <div class="bar-chart">
-        <div class="bar" style="height:80%;"></div>
-        <div class="bar" style="height:60%;"></div>
-        <div class="bar" style="height:70%;"></div>
-        <div class="bar" style="height:50%;"></div>
-        <div class="bar" style="height:90%;"></div>
-      </div>
-    </div>
 
     
-  </div>
-</div>
 
-</body>
-</html>
+  </body>
+  </html>
