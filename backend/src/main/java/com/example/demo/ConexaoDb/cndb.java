@@ -1,5 +1,5 @@
 package com.example.demo.ConexaoDb;
-
-public @interface Entity {
+@Entity
+public class cndb  {
 
 }
