@@ -10,11 +10,11 @@ public class conexaoUsuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario")
-    private String usuario;
+  @Column(name = "usuario", unique = true, nullable = false)
+private String usuario;
 
-    @Column(name = "senha")
-    private String senha;
+@Column(name = "senha", nullable = false)
+private String senha;
 
     
     public conexaoUsuario() {}

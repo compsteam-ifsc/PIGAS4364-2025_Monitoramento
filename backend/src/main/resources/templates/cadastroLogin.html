@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login & Registro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="box">
+
+        <!-- LOGIN -->
+        <div id="login">
+            <h2>Login</h2>
+            <input type="text" id="loginUser" placeholder="Usuário">
+            <input type="password" id="loginPass" placeholder="Senha">
+            <button onclick="login()">Entrar</button>
+            <p>Não tem conta? <span onclick="showRegister()">Registrar</span></p>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="register" class="hidden">
+            <h2>Registrar</h2>
+            <input type="text" id="registerUser" placeholder="Usuário">
+            <input type="password" id="registerPass" placeholder="Senha">
+            <button onclick="register()">Cadastrar</button>
+            <p>Já tem conta? <span onclick="showLogin()">Login</span></p>
+        </div>
+
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

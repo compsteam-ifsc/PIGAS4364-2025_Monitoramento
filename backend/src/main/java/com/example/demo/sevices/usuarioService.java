@@ -1,39 +1,43 @@
-    package com.example.demo.sevices;
+package com.example.demo.service;
 
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.security.crypto.password.PasswordEncoder;
-    import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-    import com.example.demo.ConexaoDb.conexaoUsuario;
-    import com.example.demo.Repository.usuarioRepository;
+import com.example.demo.model.Usuario;
+import com.example.demo.Repository.UsuarioRepository;
 
-    @Service
-    public class usuarioService {
+@Service
+public class UsuarioService {
 
-        @Autowired
-        private usuarioRepository repo;
-            @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UsuarioRepository repo;
 
- public boolean login(String usuario, String senhaDigitada) {
-        conexaoUsuario user = repo.findByUsuario(usuario);
+    @Autowired
+    private PasswordEncoder encoder;
 
-        if (user == null) {
-            return false;
+    public String register(String user, String pass) {
+        if (repo.findByUser(user) != null) {
+            return "Usuário já existe";
         }
 
-         return passwordEncoder.matches(senhaDigitada, user.getSenha());
-    }
-public conexaoUsuario cadastrar(String usuario, String senha) {
-        conexaoUsuario novo = new conexaoUsuario();
+        Usuario u = new Usuario();
+        u.setUser(user);
+        u.setPass(encoder.encode(pass));
 
-        novo.setUsuario(usuario);
-        novo.setSenha(passwordEncoder.encode(senha));
-
-        return repo.save(novo);
+        repo.save(u);
+        return "Registrado com sucesso";
     }
 
+    public String login(String user, String pass) {
+        Usuario u = repo.findByUser(user);
 
+        if (u == null) return "Usuário não encontrado";
 
-        
+        if (encoder.matches(pass, u.getPass())) {
+            return "Login OK";
+        }
+
+        return "Senha inválida";
     }
+}
