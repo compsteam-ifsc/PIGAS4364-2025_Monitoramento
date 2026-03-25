@@ -21,23 +21,11 @@ public class usuarioService {
             return "Usuário já existe";
         }
 
-        conexaoUsuario u = new conexaoUsuario(); 
+        conexaoUsuario u = new conexaoUsuario();
         u.setUsuario(user);
         u.setSenha(encoder.encode(pass));
 
         repo.save(u);
         return "Registrado com sucesso";
-    }
-
-    public String login(String user, String pass) {
-        conexaoUsuario u = repo.findByUsuario(user); 
-
-        if (u == null) return "Usuário não encontrado";
-
-        if (encoder.matches(pass, u.getSenha())) {
-            return "Login OK";
-        }
-
-        return "Senha inválida";
     }
 }

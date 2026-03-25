@@ -16,7 +16,7 @@
             <input type="text" id="loginUser" placeholder="Usuário">
             <input type="password" id="loginPass" placeholder="Senha">
             <button onclick="login()">Entrar</button>
-            <p>Não tem conta? <span onclick="MostrarRegistro()">Registrar</span></p>
+            <p>Não tem conta? <span onclick="mostrarRegistro()">Registrar</span></p>
         </div>
 
         
@@ -25,12 +25,12 @@
             <input type="text" id="registerUser" placeholder="Usuário">
             <input type="password" id="registerPass" placeholder="Senha">
             <button onclick="registrar()">Cadastrar</button>
-            <p>Já tem conta? <span onclick="mostrarlogin()">Login</span></p>
+            <p>Já tem conta? <span onclick="mostrarLogin()">Login</span></p>
         </div>
 
     </div>
 </div>
-
-
+<script th:src="@{/JS/login/parteDologin.js}"></script>
+<script th:src="@{/JS/login/login.js}"></script>
 </body>
 </html>

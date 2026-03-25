@@ -5,21 +5,19 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "usuario")
 public class conexaoUsuario {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-  @Column(name = "usuario", unique = true, nullable = false)
-private String usuario;
+    @Column(name = "usuario", unique = true, nullable = false)
+    private String usuario;
 
-@Column(name = "senha", nullable = false)
-private String senha;
+    @Column(name = "senha", nullable = false)
+    private String senha;
 
-    
     public conexaoUsuario() {}
 
-    
     public conexaoUsuario(String usuario, String senha) {
         this.usuario = usuario;
         this.senha = senha;

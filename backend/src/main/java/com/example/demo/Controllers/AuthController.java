@@ -7,7 +7,7 @@ import com.example.demo.sevices.usuarioService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
@@ -16,10 +16,5 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@RequestBody UsuarioDTO dto) {
         return service.register(dto.getUser(), dto.getPass());
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestBody UsuarioDTO dto) {
-        return service.login(dto.getUser(), dto.getPass());
     }
 }
