@@ -3,7 +3,7 @@ package com.example.demo.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.services.UsuarioService;
+import com.example.demo.sevices.usuarioService;
 
 @RestController
 @RequestMapping("/auth")
@@ -11,7 +11,7 @@ import com.example.demo.services.UsuarioService;
 public class AuthController {
 
     @Autowired
-    private UsuarioService service;
+    private usuarioService service;
 
     @PostMapping("/register")
     public String register(@RequestBody UsuarioDTO dto) {

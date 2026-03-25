@@ -1,40 +1,40 @@
-package com.example.demo.service;
+package com.example.demo.sevices;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.model.Usuario;
-import com.example.demo.Repository.UsuarioRepository;
+import com.example.demo.ConexaoDb.conexaoUsuario;
+import com.example.demo.Repository.usuarioRepository;
 
 @Service
-public class UsuarioService {
+public class usuarioService {
 
     @Autowired
-    private UsuarioRepository repo;
+    private usuarioRepository repo;
 
     @Autowired
     private PasswordEncoder encoder;
 
     public String register(String user, String pass) {
-        if (repo.findByUser(user) != null) {
+        if (repo.findByUsuario(user) != null) {
             return "Usuário já existe";
         }
 
-        Usuario u = new Usuario();
-        u.setUser(user);
-        u.setPass(encoder.encode(pass));
+        conexaoUsuario u = new conexaoUsuario(); 
+        u.setUsuario(user);
+        u.setSenha(encoder.encode(pass));
 
         repo.save(u);
         return "Registrado com sucesso";
     }
 
     public String login(String user, String pass) {
-        Usuario u = repo.findByUser(user);
+        conexaoUsuario u = repo.findByUsuario(user); 
 
         if (u == null) return "Usuário não encontrado";
 
-        if (encoder.matches(pass, u.getPass())) {
+        if (encoder.matches(pass, u.getSenha())) {
             return "Login OK";
         }
 
