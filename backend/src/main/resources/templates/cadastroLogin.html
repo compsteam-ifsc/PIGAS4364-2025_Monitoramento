@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Login & Registro</title>
-    <link rel="stylesheet" href="style.css">
+   <link rel="stylesheet" th:href="@{/css/login/login.css}">
 </head>
 <body>
 
 <div class="container">
     <div class="box">
 
-        <!-- LOGIN -->
+        
         <div id="login">
             <h2>Login</h2>
             <input type="text" id="loginUser" placeholder="Usuário">
@@ -19,7 +19,7 @@
             <p>Não tem conta? <span onclick="showRegister()">Registrar</span></p>
         </div>
 
-        <!-- REGISTER -->
+        
         <div id="register" class="hidden">
             <h2>Registrar</h2>
             <input type="text" id="registerUser" placeholder="Usuário">
@@ -31,6 +31,6 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+
 </body>
 </html>
