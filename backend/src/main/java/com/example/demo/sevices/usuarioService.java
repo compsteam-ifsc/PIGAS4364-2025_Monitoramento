@@ -17,15 +17,16 @@ public class usuarioService {
     private PasswordEncoder encoder;
 
     public String register(String user, String pass) {
+        System.out.print("3 Sdsadsadas");
         if (repo.findByUsuario(user) != null) {
-            return "Usuário já existe";
+            return "existe";
         }
 
         conexaoUsuario u = new conexaoUsuario();
         u.setUsuario(user);
         u.setSenha(encoder.encode(pass));
-
+System.out.print("4Sdsadsadas");
         repo.save(u);
-        return "Registrado com sucesso";
+        return "OK";
     }
 }

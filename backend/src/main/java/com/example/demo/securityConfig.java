@@ -3,6 +3,7 @@ package com.example.demo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,18 +21,20 @@ public class securityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+           
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/login",
                     "/auth/register",
                     "/css/**",
-                    "/js/**"
+                    "/JS/**"
                 ).permitAll()
                 .anyRequest().authenticated()
+                 
             )
             .formLogin(form -> form
-                .loginPage("/login")                // sua página HTML de login
-                .loginProcessingUrl("/login")       // Spring processa o POST aqui
+                .loginPage("/login")                
+                .loginProcessingUrl("/login")      
                 .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
