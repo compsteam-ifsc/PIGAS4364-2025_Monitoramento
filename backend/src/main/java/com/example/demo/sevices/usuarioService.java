@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 import com.example.demo.ConexaoDb.conexaoUsuario;
 import com.example.demo.Repository.usuarioRepository;
 
+
 @Service
 public class usuarioService {
+
+    
 
     @Autowired
     private usuarioRepository repo;
@@ -28,4 +31,17 @@ public class usuarioService {
         repo.save(u);
         return "Registrado com sucesso";
     }
+    public String login(String user, String pass) {
+         conexaoUsuario u = new conexaoUsuario();
+        if (u == null) {
+        return "Usuário não encontrado";
+    }
+     
+      if (encoder.matches(pass, u.getSenha())) {
+        return "Login sucesso";
+    } else {   
+        return "Senha incorreta";
+    }
+    
+}
 }

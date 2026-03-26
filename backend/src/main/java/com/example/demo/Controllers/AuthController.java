@@ -17,4 +17,8 @@ public class AuthController {
     public String register(@RequestBody UsuarioDTO dto) {
         return service.register(dto.getUser(), dto.getPass());
     }
+    @PostMapping("/login")
+public String login(@RequestBody UsuarioDTO dto) {
+    return service.login(dto.getUser(), dto.getPass());
+}
 }
