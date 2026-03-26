@@ -26,6 +26,7 @@ public class securityConfig {
                 .requestMatchers(
                     "/login",
                     "/auth/register",
+                    "/processar-login",
                     "/css/**",
                     "/JS/**"
                 ).permitAll()

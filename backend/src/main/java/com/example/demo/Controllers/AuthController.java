@@ -31,8 +31,5 @@ public class AuthController {
             
         }
     }
-    @PostMapping("/login")
-public String login(@RequestBody UsuarioDTO dto) {
-    return service.login(dto.getUser(), dto.getPass());
-}
+   
 }
