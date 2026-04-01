@@ -18,7 +18,7 @@ public class AuthController {
     @PostMapping("/register")
     public String register(@RequestParam String registerUser,
                        @RequestParam String registerPass, RedirectAttributes redirectAttributes) {
-        System.out.print("2  Sdsadsadas");
+     
         String retorno = service.register(registerUser, registerPass);
         if(retorno == "OK"){
             redirectAttributes.addFlashAttribute("message", " Cadastro realizado com sucesso");

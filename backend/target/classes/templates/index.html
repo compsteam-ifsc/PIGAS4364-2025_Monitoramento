@@ -17,15 +17,19 @@
     <canvas id="barChart" width="600" height="300"></canvas>
   </div>
 
+  <form action="/logout" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <button type="submit">Logout</button>
+</form>
+
   <!--esse é do edu-->
   <!--
   <div style="width: 800px; margin: auto;">
     <canvas id="graficoFluxoHora"></canvas>
   </div> -->
   <!--<script src="/JS/chart.min.js"></script>-->
-  <script th:src="@{https://cdn.jsdelivr.net/npm/chart.js}"></script>
-  <script th:src="@{/JS/script.js}"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/JS/script.js"></script>
 
   </body>
   </html> 

@@ -38,11 +38,7 @@ private usuarioService us;
     public String autenticar(@RequestParam String user, @RequestParam String pass, RedirectAttributes redirectAttributes, HttpServletRequest request ) {
        try {
             UserDetails userDetails = us.login(user, pass);
-
-            // verifica se encontrou usuário e se a senha bate
             if (userDetails != null && encoder.matches(pass, userDetails.getPassword())) {
-
-                // 1) Cria o objeto Authentication
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -50,12 +46,11 @@ private usuarioService us;
                                 userDetails.getAuthorities()
                         );
 
-                // 2) Cria e seta no SecurityContext
+          
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(authToken);
                 SecurityContextHolder.setContext(context);
 
-                // 3) Salva na sessão HTTP (importantíssimo!)
                 HttpSession session = request.getSession(true);
                 session.setAttribute(
                         HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
