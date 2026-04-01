@@ -10,27 +10,37 @@
 <div class="container">
     <div class="box">
 
-        
-        <div id="login">
-            <h2>Login</h2>
-            <input type="text" id="loginUser" placeholder="Usuário">
-            <input type="password" id="loginPass" placeholder="Senha">
-            <button onclick="login()">Entrar</button>
-            <p>Não tem conta? <span onclick="mostrarRegistro()">Registrar</span></p>
+          <div th:if="${message}" th:class="'alert "+${alertClass} role="alert">
+            <span th:text="${message}"></span>
         </div>
+        <div id="login">
+            <form th:action="@{/processar-login}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">   
 
-        
+                <h2>Login</h2>
+            <input type="text" id="loginUser"  name="user" placeholder="Usuário">
+            <input type="password" id="loginPass" name="pass" placeholder="Senha">
+            <button type="submit">Entrar</button>
+            <p>Não tem conta? <span onclick="mostrarRegistro()">Registrar</span></p>
+            </form>
+        </div>
+        <div th:if="${message}" th:class="'alert "+${alertClass} role="alert">
+            <span th:text="${message}"></span>
+        </div>
+         <form th:action="@{/auth/register}" method="post" name="FormRegister" id="FormRegister">  
         <div id="register" class="hidden">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">   
             <h2>Registrar</h2>
-            <input type="text" id="registerUser" placeholder="Usuário">
-            <input type="password" id="registerPass" placeholder="Senha">
-            <button onclick="registrar()">Cadastrar</button>
+            <input type="text" id="registerUser" name="registerUser" placeholder="Usuário" required>
+            <input type="password" id="registerPass" name="registerPass" placeholder="Senha" required>
+            <button type="submit">Cadastrar</button>
             <p>Já tem conta? <span onclick="mostrarLogin()">Login</span></p>
         </div>
-
+ </form>  
     </div>
 </div>
 <script th:src="@{/JS/login/parteDologin.js}"></script>
-<script th:src="@{/JS/login/login.js}"></script>
+
 </body>
 </html>
+
