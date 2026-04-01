@@ -24,6 +24,7 @@ public class securityConfig {
            
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                   
                     "/login",
                     "/auth/register",
                     "/processar-login",
