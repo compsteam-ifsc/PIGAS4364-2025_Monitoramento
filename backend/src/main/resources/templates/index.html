@@ -3,23 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+  <title>Relatório Diário</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
 
-  <img src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789" alt="Logo IFSC" class="logo-ifsc">
-  
-  <input type="date" id="dataInput">
+  <!-- TOPO -->
+  <div class="top-bar">
+    <img
+      src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
+      alt="Logo IFSC"
+      class="logo-ifsc"
+    >
 
+    <h1 class="page-title">Relatório Diário</h1>
+
+    <!-- coluna fantasma pra manter o título centralizado -->
+    <div class="top-spacer"></div>
+  </div>
+
+  <!-- CONTEÚDO -->
   <div class="dashboard-container">
 
+    <!-- CARD DO GRÁFICO -->
     <div class="card chart-card">
       <div class="chart-wrapper">
         <canvas id="barChart"></canvas>
       </div>
     </div>
 
+    <!-- INPUT DE DATA ENTRE O GRÁFICO E O RESUMO -->
+    <div class="date-section">
+      <input type="date" id="dataInput">
+    </div>
+
+    <!-- CARD RESUMO -->
     <div class="card info-card">
       <h2 class="info-title">Resumo do Dia</h2>
 
@@ -41,11 +59,17 @@
 
   </div>
 
+  <!-- LOGOUT -->
   <form action="/logout" method="post">
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <input
+      type="hidden"
+      th:name="${_csrf.parameterName}"
+      th:value="${_csrf.token}"
+    >
     <button type="submit">Logout</button>
   </form>
 
+  <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/JS/script.js"></script>
 
