@@ -1,44 +1,71 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório Diário</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
 </head>
 <body>
 
   <!-- TOPO -->
-  <div class="top-bar">
-    <img
-      src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
-      alt="Logo IFSC"
-      class="logo-ifsc"
-    >
+  <header class="top-bar">
 
-    <h1 class="page-title">Relatório Diário</h1>
+    <!-- LOGO IFSC -->
+    <div class="top-logo">
+      <img
+        src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
+        alt="Logo IFSC"
+        class="logo-ifsc"
+      >
+    </div>
 
-    <!-- coluna fantasma pra manter o título centralizado -->
-    <div class="top-spacer"></div>
-  </div>
+    <!-- CENTRO -->
+    <div class="top-center">
+      <h1 class="page-title">Relatório Diário</h1>
 
-  <!-- CONTEÚDO -->
-  <div class="dashboard-container">
-
-    <!-- CARD DO GRÁFICO -->
-    <div class="card chart-card">
-      <div class="chart-wrapper">
-        <canvas id="barChart"></canvas>
+      <!-- INPUT DE DATA COM LABEL -->
+      <div class="date-wrapper">
+        <label for="dataInput" class="date-label">Selecione a data</label>
+        <input type="date" id="dataInput" name="data">
       </div>
     </div>
 
-    <!-- INPUT DE DATA ENTRE O GRÁFICO E O RESUMO -->
-    <div class="date-section">
-      <input type="date" id="dataInput">
+    <!-- USUÁRIO + LOGOUT -->
+    <div class="user-area">
+      <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
+
+      <form th:action="@{/logout}" method="post" class="logout-top">
+        <input
+          type="hidden"
+          th:if="${_csrf != null}"
+          th:name="${_csrf.parameterName}"
+          th:value="${_csrf.token}"
+        >
+        <button type="submit">Logout</button>
+      </form>
     </div>
 
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="dashboard-container">
+
+    <!-- CARD DO GRÁFICO -->
+    <section class="card chart-card">
+      <div class="chart-header">
+        <h2 class="section-title">Movimentação do Dia</h2>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="barChart"></canvas>
+      </div>
+    </section>
+
     <!-- CARD RESUMO -->
-    <div class="card info-card">
+    <section class="card info-card">
       <h2 class="info-title">Resumo do Dia</h2>
 
       <div class="info-item">
@@ -55,23 +82,13 @@
         <span class="info-label">Horário da última pessoa que saiu:</span>
         <span class="info-value" id="ultimaSaida">--:--</span>
       </div>
-    </div>
+    </section>
 
-  </div>
-
-  <!-- LOGOUT -->
-  <form action="/logout" method="post">
-    <input
-      type="hidden"
-      th:name="${_csrf.parameterName}"
-      th:value="${_csrf.token}"
-    >
-    <button type="submit">Logout</button>
-  </form>
+  </main>
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/JS/script.js"></script>
+  <script th:src="@{/JS/script.js}" src="/JS/script.js"></script>
 
 </body>
 </html>
