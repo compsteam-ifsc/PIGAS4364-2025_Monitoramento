@@ -29,7 +29,8 @@ public class securityConfig {
                     "/auth/register",
                     "/processar-login",
                     "/css/**",
-                    "/JS/**"
+                    "/JS/**",
+                    "/img/**"
                 ).permitAll()
                 .anyRequest().authenticated()
                  
