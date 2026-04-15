@@ -5,19 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório Diário</title>
 
-  <!-- CSS -->
   <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
 </head>
 <body>
 
-  <!-- TOPO -->
   <header class="top-bar">
 
-    <!-- LOGO IFSC -->
+    <!-- ESQUERDA - IFSC -->
     <div class="top-logo">
       <img
         src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
-        alt="Logo IFSC"
+        alt="IFSC"
         class="logo-ifsc"
       >
     </div>
@@ -26,34 +24,30 @@
     <div class="top-center">
       <h1 class="page-title">Relatório Diário</h1>
 
-      <!-- INPUT DE DATA COM LABEL -->
       <div class="date-wrapper">
-        <label for="dataInput" class="date-label">Selecione a data do relatório</label>
-        <input type="date" id="dataInput" name="data">
+        <label class="date-label">Selecione a data</label>
+        <input type="date" id="dataInput">
       </div>
     </div>
 
-    <!-- USUÁRIO + LOGOUT -->
+    <!-- DIREITA -->
     <div class="user-area">
+
+      <!-- LOGO DO PROJETO -->
+      <img src="/img/comp.png" alt="Projeto" class="logo-projeto">
+
       <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
 
       <form th:action="@{/logout}" method="post" class="logout-top">
-        <input
-          type="hidden"
-          th:if="${_csrf != null}"
-          th:name="${_csrf.parameterName}"
-          th:value="${_csrf.token}"
-        >
         <button type="submit">Logout</button>
       </form>
+
     </div>
 
   </header>
 
-  <!-- CONTEÚDO -->
   <main class="dashboard-container">
 
-    <!-- CARD DO GRÁFICO -->
     <section class="card chart-card">
       <div class="chart-header">
         <h2 class="section-title">Movimentação do Dia</h2>
@@ -64,29 +58,31 @@
       </div>
     </section>
 
-    <!-- CARD RESUMO -->
     <section class="card info-card">
       <h2 class="info-title">Resumo do Dia</h2>
 
-      <div class="info-item">
-        <span class="info-label">Quantidade de pessoas que entraram ao longo do dia:</span>
-        <span class="info-value" id="totalEntradas">--</span>
-      </div>
+      <div class="stats-grid">
 
-      <div class="info-item">
-        <span class="info-label">Horário da primeira pessoa que entrou:</span>
-        <span class="info-value" id="primeiraEntrada">--:--</span>
-      </div>
+        <div class="stat-box">
+          <span class="stat-label">Entradas</span>
+          <span class="stat-value" id="totalEntradas">--</span>
+        </div>
 
-      <div class="info-item">
-        <span class="info-label">Horário da última pessoa que saiu:</span>
-        <span class="info-value" id="ultimaSaida">--:--</span>
+        <div class="stat-box">
+          <span class="stat-label">Primeira Entrada</span>
+          <span class="stat-value" id="primeiraEntrada">--:--</span>
+        </div>
+
+        <div class="stat-box">
+          <span class="stat-label">Última Saída</span>
+          <span class="stat-value" id="ultimaSaida">--:--</span>
+        </div>
+
       </div>
     </section>
 
   </main>
 
-  <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script th:src="@{/JS/script.js}" src="/JS/script.js"></script>
 
