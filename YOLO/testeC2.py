@@ -1,18 +1,17 @@
 import os
+import torch
 import cv2
-import math
-import time
-import requests
 from ultralytics import YOLO
+import time
+import math
 
-# ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
+pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
-URL_BACKEND = "http://localhost:8080/api/relatorio"
-# ---------------------------------------
+# 🔥 MUDE AQUI dependendo da câmera
+INVERTER = True  # False = câmera original | True = câmera invertida
 
 def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
@@ -29,14 +28,16 @@ for arquivo in os.listdir(pasta_videos):
         print("Erro ao abrir:", arquivo)
         continue
 
-    LINE_Y = 320
-    MIN_AREA = 300
-    MAX_DIST = 200
-    ID_TIMEOUT = 60
+    LINE_Y = 265      
+    MIN_AREA = 300   
+    MAX_DIST = 200     
+    ID_TIMEOUT = 60   
     NEXT_ID = 0
 
-    entradas = 0
+    entradas = 0    
     saidas = 0
+    dentro = 0
+    fora = 0
 
     tracks = {}
     frame_count = 0
@@ -45,7 +46,6 @@ for arquivo in os.listdir(pasta_videos):
         ret, frame = cap.read()
         if not ret:
             break
-
         frame_count += 1
 
         results = model.predict(frame, conf=0.3, imgsz=960, classes=[0], verbose=False)
@@ -57,21 +57,20 @@ for arquivo in os.listdir(pasta_videos):
                 area = (x2-x1)*(y2-y1)
                 if area < MIN_AREA:
                     continue
-
                 cx = int((x1+x2)/2)
                 cy = int((y1+y2)/2)
-
-                dets.append({'cx': cx, 'cy': cy})
+                dets.append({'box':(x1,y1,x2,y2),'cx':cx,'cy':cy})
 
         unmatched_dets = []
-        used_ids = set()
+        used_track_ids = set()
 
+        # 🔗 ASSOCIA DETECÇÕES A TRACKS
         for d in dets:
             best_id = None
             best_dist = 1e9
 
             for tid, t in tracks.items():
-                if tid in used_ids:
+                if tid in used_track_ids:
                     continue
 
                 dist = euclid((d['cx'], d['cy']), (t['cx'], t['cy']))
@@ -85,10 +84,12 @@ for arquivo in os.listdir(pasta_videos):
                 tracks[best_id]['cy'] = d['cy']
                 tracks[best_id]['last_seen'] = frame_count
                 tracks[best_id]['hits'] += 1
-                used_ids.add(best_id)
+                used_track_ids.add(best_id)
+                d['assigned_id'] = best_id
             else:
                 unmatched_dets.append(d)
 
+        # 🆕 CRIA NOVOS TRACKS
         for d in unmatched_dets:
             tracks[NEXT_ID] = {
                 'cx': d['cx'],
@@ -97,54 +98,55 @@ for arquivo in os.listdir(pasta_videos):
                 'state': ('dentro' if d['cy'] < LINE_Y else 'fora'),
                 'hits': 1
             }
+            d['assigned_id'] = NEXT_ID
             NEXT_ID += 1
 
-        # remover antigos
+        # 🗑️ REMOVE TRACKS ANTIGOS
         to_delete = [tid for tid, t in tracks.items() if frame_count - t['last_seen'] > ID_TIMEOUT]
         for tid in to_delete:
             del tracks[tid]
 
-        # ---------------- CONTAGEM + ENVIO ----------------
-        for tid, t in tracks.items():
+        # 🔥 CONTAGEM (COM SUPORTE A INVERSÃO)
+        for tid, t in list(tracks.items()):
             cy = t['cy']
-            prev = t['state']
-            cur = 'fora' if cy > LINE_Y else 'dentro'
+            prev_state = t['state']
+            cur_state = 'fora' if cy > LINE_Y else 'dentro'
 
-            # ENTRADA
-            if prev == 'fora' and cur == 'dentro' and t['hits'] > 1:
-                entradas += 1
-                t['state'] = 'dentro'
+            if not INVERTER:
+                # câmera normal
+                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
+                    entradas += 1
+                    dentro += 1
+                    if fora > 0: fora -= 1
+                    tracks[tid]['state'] = 'dentro'
 
-                try:
-                    requests.post(URL_BACKEND, json={
-                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        "saidaEntrada": "ENTRADA"  # 🔥 CORRETO
-                    })
-                    print("Entrada enviada")
-                except Exception as e:
-                    print("Erro entrada:", e)
+                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
+                    saidas += 1
+                    if dentro > 0: dentro -= 1
+                    fora += 1
+                    tracks[tid]['state'] = 'fora'
 
-            # SAÍDA
-            elif prev == 'dentro' and cur == 'fora' and t['hits'] > 1:
-                saidas += 1
-                t['state'] = 'fora'
+            else:
+                # câmera invertida
+                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
+                    saidas += 1
+                    if dentro > 0: dentro -= 1
+                    fora += 1
+                    tracks[tid]['state'] = 'dentro'
 
-                try:
-                    requests.post(URL_BACKEND, json={
-                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        "saidaEntrada": "SAIDA"  # 🔥 CORRETO
-                    })
-                    print("Saída enviada")
-                except Exception as e:
-                    print("Erro saída:", e)
+                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
+                    entradas += 1
+                    dentro += 1
+                    if fora > 0: fora -= 1
+                    tracks[tid]['state'] = 'fora'
 
-        # UI
+        # 🎨 DESENHO NA TELA
         cv2.line(frame, (0, LINE_Y), (frame.shape[1], LINE_Y), (0,255,255), 2)
 
         cv2.putText(frame, f"{arquivo}", (20,30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
 
-        cv2.putText(frame, f"Entradas:{entradas} Saidas:{saidas}", (20,60),
+        cv2.putText(frame, f"Entradas:{entradas}  Saidas:{saidas}", (20,60),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 2)
 
         cv2.imshow("Contagem", frame)
