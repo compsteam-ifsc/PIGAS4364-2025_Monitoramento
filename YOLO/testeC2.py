@@ -7,8 +7,11 @@ import math
 
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\entrando"
+pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
+
+# 🔥 MUDE AQUI dependendo da câmera
+INVERTER = True  # False = câmera original | True = câmera invertida
 
 def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
@@ -18,15 +21,14 @@ for arquivo in os.listdir(pasta_videos):
         continue
 
     caminho = os.path.join(pasta_videos, arquivo)
-    print(f"\n🔥 Processando: {arquivo}")
+    print(f"\nProcessando: {arquivo}")
 
     cap = cv2.VideoCapture(caminho)
     if not cap.isOpened():
         print("Erro ao abrir:", arquivo)
         continue
 
-    # RESETA tudo pra cada vídeo
-    LINE_Y = 320       
+    LINE_Y = 265      
     MIN_AREA = 300   
     MAX_DIST = 200     
     ID_TIMEOUT = 60   
@@ -39,7 +41,6 @@ for arquivo in os.listdir(pasta_videos):
 
     tracks = {}
     frame_count = 0
-    prev_time = 0
 
     while True:
         ret, frame = cap.read()
@@ -63,6 +64,7 @@ for arquivo in os.listdir(pasta_videos):
         unmatched_dets = []
         used_track_ids = set()
 
+        # 🔗 ASSOCIA DETECÇÕES A TRACKS
         for d in dets:
             best_id = None
             best_dist = 1e9
@@ -87,7 +89,7 @@ for arquivo in os.listdir(pasta_videos):
             else:
                 unmatched_dets.append(d)
 
-        # novos tracks
+        # 🆕 CRIA NOVOS TRACKS
         for d in unmatched_dets:
             tracks[NEXT_ID] = {
                 'cx': d['cx'],
@@ -99,31 +101,48 @@ for arquivo in os.listdir(pasta_videos):
             d['assigned_id'] = NEXT_ID
             NEXT_ID += 1
 
-        # remove antigos
+        # 🗑️ REMOVE TRACKS ANTIGOS
         to_delete = [tid for tid, t in tracks.items() if frame_count - t['last_seen'] > ID_TIMEOUT]
         for tid in to_delete:
             del tracks[tid]
 
-        # contagem
+        # 🔥 CONTAGEM (COM SUPORTE A INVERSÃO)
         for tid, t in list(tracks.items()):
             cy = t['cy']
             prev_state = t['state']
             cur_state = 'fora' if cy > LINE_Y else 'dentro'
 
-            if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
-                entradas += 1
-                dentro += 1
-                if fora > 0: fora -= 1
-                tracks[tid]['state'] = 'dentro'
+            if not INVERTER:
+                # câmera normal
+                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
+                    entradas += 1
+                    dentro += 1
+                    if fora > 0: fora -= 1
+                    tracks[tid]['state'] = 'dentro'
 
-            elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
-                saidas += 1
-                if dentro > 0: dentro -= 1
-                fora += 1
-                tracks[tid]['state'] = 'fora'
+                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
+                    saidas += 1
+                    if dentro > 0: dentro -= 1
+                    fora += 1
+                    tracks[tid]['state'] = 'fora'
 
-        # overlay
+            else:
+                # câmera invertida
+                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
+                    saidas += 1
+                    if dentro > 0: dentro -= 1
+                    fora += 1
+                    tracks[tid]['state'] = 'dentro'
+
+                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
+                    entradas += 1
+                    dentro += 1
+                    if fora > 0: fora -= 1
+                    tracks[tid]['state'] = 'fora'
+
+        # 🎨 DESENHO NA TELA
         cv2.line(frame, (0, LINE_Y), (frame.shape[1], LINE_Y), (0,255,255), 2)
+
         cv2.putText(frame, f"{arquivo}", (20,30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
 
