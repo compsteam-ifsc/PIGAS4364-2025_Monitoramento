@@ -1,14 +1,18 @@
 import os
-import torch
 import cv2
-from ultralytics import YOLO
-import time
 import math
+import time
+import requests
+from ultralytics import YOLO
 
+# ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\entrando"
+pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
+
+URL_BACKEND = "http://localhost:8080/api/relatorio"
+# ---------------------------------------
 
 def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
@@ -18,33 +22,30 @@ for arquivo in os.listdir(pasta_videos):
         continue
 
     caminho = os.path.join(pasta_videos, arquivo)
-    print(f"\n🔥 Processando: {arquivo}")
+    print(f"\nProcessando: {arquivo}")
 
     cap = cv2.VideoCapture(caminho)
     if not cap.isOpened():
         print("Erro ao abrir:", arquivo)
         continue
 
-    # RESETA tudo pra cada vídeo
-    LINE_Y = 320       
-    MIN_AREA = 300   
-    MAX_DIST = 200     
-    ID_TIMEOUT = 60   
+    LINE_Y = 320
+    MIN_AREA = 300
+    MAX_DIST = 200
+    ID_TIMEOUT = 60
     NEXT_ID = 0
 
-    entradas = 0    
+    entradas = 0
     saidas = 0
-    dentro = 0
-    fora = 0
 
     tracks = {}
     frame_count = 0
-    prev_time = 0
 
     while True:
         ret, frame = cap.read()
         if not ret:
             break
+
         frame_count += 1
 
         results = model.predict(frame, conf=0.3, imgsz=960, classes=[0], verbose=False)
@@ -56,19 +57,21 @@ for arquivo in os.listdir(pasta_videos):
                 area = (x2-x1)*(y2-y1)
                 if area < MIN_AREA:
                     continue
+
                 cx = int((x1+x2)/2)
                 cy = int((y1+y2)/2)
-                dets.append({'box':(x1,y1,x2,y2),'cx':cx,'cy':cy})
+
+                dets.append({'cx': cx, 'cy': cy})
 
         unmatched_dets = []
-        used_track_ids = set()
+        used_ids = set()
 
         for d in dets:
             best_id = None
             best_dist = 1e9
 
             for tid, t in tracks.items():
-                if tid in used_track_ids:
+                if tid in used_ids:
                     continue
 
                 dist = euclid((d['cx'], d['cy']), (t['cx'], t['cy']))
@@ -82,12 +85,10 @@ for arquivo in os.listdir(pasta_videos):
                 tracks[best_id]['cy'] = d['cy']
                 tracks[best_id]['last_seen'] = frame_count
                 tracks[best_id]['hits'] += 1
-                used_track_ids.add(best_id)
-                d['assigned_id'] = best_id
+                used_ids.add(best_id)
             else:
                 unmatched_dets.append(d)
 
-        # novos tracks
         for d in unmatched_dets:
             tracks[NEXT_ID] = {
                 'cx': d['cx'],
@@ -96,38 +97,54 @@ for arquivo in os.listdir(pasta_videos):
                 'state': ('dentro' if d['cy'] < LINE_Y else 'fora'),
                 'hits': 1
             }
-            d['assigned_id'] = NEXT_ID
             NEXT_ID += 1
 
-        # remove antigos
+        # remover antigos
         to_delete = [tid for tid, t in tracks.items() if frame_count - t['last_seen'] > ID_TIMEOUT]
         for tid in to_delete:
             del tracks[tid]
 
-        # contagem
-        for tid, t in list(tracks.items()):
+        # ---------------- CONTAGEM + ENVIO ----------------
+        for tid, t in tracks.items():
             cy = t['cy']
-            prev_state = t['state']
-            cur_state = 'fora' if cy > LINE_Y else 'dentro'
+            prev = t['state']
+            cur = 'fora' if cy > LINE_Y else 'dentro'
 
-            if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
+            # ENTRADA
+            if prev == 'fora' and cur == 'dentro' and t['hits'] > 1:
                 entradas += 1
-                dentro += 1
-                if fora > 0: fora -= 1
-                tracks[tid]['state'] = 'dentro'
+                t['state'] = 'dentro'
 
-            elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
+                try:
+                    requests.post(URL_BACKEND, json={
+                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "saidaEntrada": "ENTRADA"  # 🔥 CORRETO
+                    })
+                    print("Entrada enviada")
+                except Exception as e:
+                    print("Erro entrada:", e)
+
+            # SAÍDA
+            elif prev == 'dentro' and cur == 'fora' and t['hits'] > 1:
                 saidas += 1
-                if dentro > 0: dentro -= 1
-                fora += 1
-                tracks[tid]['state'] = 'fora'
+                t['state'] = 'fora'
 
-        # overlay
+                try:
+                    requests.post(URL_BACKEND, json={
+                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "saidaEntrada": "SAIDA"  # 🔥 CORRETO
+                    })
+                    print("Saída enviada")
+                except Exception as e:
+                    print("Erro saída:", e)
+
+        # UI
         cv2.line(frame, (0, LINE_Y), (frame.shape[1], LINE_Y), (0,255,255), 2)
+
         cv2.putText(frame, f"{arquivo}", (20,30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
 
-        cv2.putText(frame, f"Entradas:{entradas}  Saidas:{saidas}", (20,60),
+        cv2.putText(frame, f"Entradas:{entradas} Saidas:{saidas}", (20,60),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 2)
 
         cv2.imshow("Contagem", frame)

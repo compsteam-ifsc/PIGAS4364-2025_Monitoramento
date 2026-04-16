@@ -3,14 +3,10 @@ package com.example.demo.ConexaoDb;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-
-
-
 @Entity
 @Table(name = "horario")
 public class Cndb {
-    
+   
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,6 +15,26 @@ public class Cndb {
     private LocalDateTime diaHorario;
 
     @Enumerated(EnumType.STRING)
-private SaidaOuEntrada saida;
-    
+    @Column(name = "saida_entrada") 
+    private SaidaOuEntrada saidaEntrada;
+
+    public Long getId() { 
+        return id; 
+    }
+
+    public LocalDateTime getDiaHorario() { 
+        return diaHorario; 
+    }
+
+    public void setDiaHorario(LocalDateTime diaHorario) {
+        this.diaHorario = diaHorario;
+    }
+
+    public SaidaOuEntrada getSaidaEntrada() {
+        return saidaEntrada;
+    }
+
+    public void setSaidaEntrada(SaidaOuEntrada saidaEntrada) {
+        this.saidaEntrada = saidaEntrada;
+    }
 }

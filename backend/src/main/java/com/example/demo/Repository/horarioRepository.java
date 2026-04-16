@@ -21,7 +21,7 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
     @Query("""
         SELECT COUNT(c)
         FROM Cndb c
-        WHERE c.saida = com.example.demo.ConexaoDb.SaidaOuEntrada.E
+        WHERE c.saidaEntrada = com.example.demo.ConexaoDb.SaidaOuEntrada.ENTRADA
         AND c.diaHorario BETWEEN :inicio AND :fim
     """)
     Long contarEntradasNoDia(LocalDateTime inicio, LocalDateTime fim);
@@ -29,7 +29,7 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
     @Query("""
         SELECT MIN(c.diaHorario)
         FROM Cndb c
-        WHERE c.saida = com.example.demo.ConexaoDb.SaidaOuEntrada.E
+        WHERE c.saidaEntrada = com.example.demo.ConexaoDb.SaidaOuEntrada.ENTRADA
         AND c.diaHorario BETWEEN :inicio AND :fim
     """)
     LocalDateTime buscarPrimeiraEntrada(LocalDateTime inicio, LocalDateTime fim);
@@ -37,7 +37,7 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
     @Query("""
         SELECT MAX(c.diaHorario)
         FROM Cndb c
-        WHERE c.saida = com.example.demo.ConexaoDb.SaidaOuEntrada.S
+        WHERE c.saidaEntrada = com.example.demo.ConexaoDb.SaidaOuEntrada.SAIDA
         AND c.diaHorario BETWEEN :inicio AND :fim
     """)
     LocalDateTime buscarUltimaSaida(LocalDateTime inicio, LocalDateTime fim);

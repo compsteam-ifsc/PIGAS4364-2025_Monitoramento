@@ -13,10 +13,15 @@ async function carregarGrafico(data) {
 
     const ctx = document.getElementById('barChart').getContext('2d');
 
+    // 🔥 se já existe, só atualiza (melhor que destruir)
     if (grafico) {
-        grafico.destroy();
+        grafico.data.labels = labels;
+        grafico.data.datasets[0].data = valores;
+        grafico.update();
+        return;
     }
 
+    // cria só uma vez
     grafico = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -81,20 +86,27 @@ async function carregarResumo(data) {
     document.getElementById("ultimaSaida").textContent = resumo.ultimaSaida ?? "--:--";
 }
 
+// 🔥 INIT
 window.onload = async () => {
     const inputData = document.getElementById("dataInput");
 
-    // pega a data de hoje no formato YYYY-MM-DD
     const hoje = new Date().toLocaleDateString('en-CA');
-
-    // preenche o input com a data de hoje
     inputData.value = hoje;
 
-    // carrega gráfico e resumo automaticamente no login
     await carregarGrafico(hoje);
     await carregarResumo(hoje);
 };
 
+// 🔥 ATUALIZA AUTOMÁTICO (ESSA PARTE FALTAVA)
+setInterval(async () => {
+    const data = document.getElementById("dataInput").value;
+
+    await carregarGrafico(data);
+    await carregarResumo(data);
+
+}, 3000); // 3 segundos
+
+// 🔥 troca de data manual
 document.getElementById("dataInput").addEventListener("change", async (e) => {
     const dataSelecionada = e.target.value;
 
