@@ -5,6 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Repository.horarioRepository;
+import com.example.demo.ConexaoDb.Cndb;
 import com.example.demo.ConexaoDb.SaidaOuEntrada;
 
 import java.time.LocalDate;
@@ -20,7 +21,6 @@ public class DashboardController {
     @Autowired
     private horarioRepository horarioRepo;
 
-    // ================= RESUMO =================
     @GetMapping("/resumo")
     public Map<String, Object> resumo(
         @RequestParam String inicio,
@@ -50,15 +50,13 @@ public class DashboardController {
         return response;
     }
 
-    // ================= FLUXO =================
     @GetMapping("/fluxo")
     public List<Object[]> fluxoPorHora() {
         return horarioRepo.fluxoPorHora();
     }
 
-    // ================= 🔥 FILTRO POR DIA (O QUE FALTAVA) =================
     @GetMapping("/filtrado")
-    public List<Horario> buscarPorData(
+    public List<Cndb> buscarPorData(
             @RequestParam("data")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate data

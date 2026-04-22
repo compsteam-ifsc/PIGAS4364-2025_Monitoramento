@@ -2,7 +2,6 @@ package com.example.demo.Repository;
 
 import com.example.demo.ConexaoDb.Cndb;
 import com.example.demo.ConexaoDb.SaidaOuEntrada;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,4 +54,6 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
         @Param("fim") LocalDateTime fim,
         @Param("tipo") SaidaOuEntrada tipo
     );
+
+    List<Cndb> findByDiaHorarioBetween(LocalDateTime inicio, LocalDateTime fim);
 }
