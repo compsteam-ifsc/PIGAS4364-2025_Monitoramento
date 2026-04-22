@@ -20,46 +20,52 @@
     <div class="brand-header">
         <img th:src="@{/img/logo-comp.png}" alt="Logo COMP STEAM" class="logo-comp-steam">
 
-            <div class="brand-name">
-                <span class="comp">COMP</span>
-                <span class="divider">|</span>
-                <span class="steam">STEAM</span>
-            </div>
+        <div class="brand-name">
+            <span class="comp">COMP</span>
+            <span class="divider">|</span>
+            <span class="steam">STEAM</span>
         </div>
-
+    </div>
 
     <div class="box">
 
-        <div th:if="${message}" th:class="'alert '+${alertClass} role='alert'">
+        <!-- MENSAGEM -->
+        <div th:if="${message}" th:class="'alert '+${alertClass}">
             <span th:text="${message}"></span>
         </div>
 
+        <!-- LOGIN -->
         <div id="login">
-            <form th:action="@{/processar-login}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">  
+            <form th:action="@{/login}" method="post">
+                
+                <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> -->
 
                 <h2>Login</h2>
-                <input type="text" id="loginUser" name="user" placeholder="Usuário">
-                <input type="password" id="loginPass" name="pass" placeholder="Senha">
+
+                <input type="text" name="username" placeholder="Usuário" required>
+                <input type="password" name="password" placeholder="Senha" required>
+
                 <button type="submit">Entrar</button>
                 <p>Não tem conta? <span onclick="mostrarRegistro()">Registrar</span></p>
             </form>
         </div>
 
-        <div th:if="${message}" th:class="'alert '+${alertClass} role='alert'">
-            <span th:text="${message}"></span>
-        </div>
-
-        <form th:action="@{/auth/register}" method="post" name="FormRegister" id="FormRegister">  
+        <!-- REGISTRO -->
+        <form th:action="@{/auth/register}" method="post">
             <div id="register" class="hidden">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">  
+
+               
+                <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"> -->
+
                 <h2>Registrar</h2>
-                <input type="text" id="registerUser" name="registerUser" placeholder="Usuário" required>
-                <input type="password" id="registerPass" name="registerPass" placeholder="Senha" required>
+
+                <input type="text" name="registerUser" placeholder="Usuário" required>
+                <input type="password" name="registerPass" placeholder="Senha" required>
+
                 <button type="submit">Cadastrar</button>
                 <p>Já tem conta? <span onclick="mostrarLogin()">Login</span></p>
             </div>
-        </form>  
+        </form>
 
     </div>
 </div>

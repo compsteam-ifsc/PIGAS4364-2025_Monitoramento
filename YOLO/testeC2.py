@@ -7,7 +7,7 @@ import math
 
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
+pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
 # 🔥 MUDE AQUI dependendo da câmera
