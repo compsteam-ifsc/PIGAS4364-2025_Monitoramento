@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Repository.daterRepository;
 import com.example.demo.ConexaoDb.Cndb;
+import com.example.demo.ConexaoDb.SaidaOuEntrada;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -19,18 +21,28 @@ public class RelatorioController {
     private daterRepository repo;
 
     @PostMapping("/relatorio")
-public String salvar(@RequestBody Cndb dto) {
+public String salvar(@RequestBody Map<String, String> body) {
 
     try {
-        System.out.println("Recebido: " + dto.getSaidaEntrada());
+        String tipo = body.get("saidaEntrada");
 
-        if (dto.getSaidaEntrada() == null) {
-            return "Erro: saidaEntrada veio NULL";
+        System.out.println("Recebido: " + tipo);
+
+        if (tipo == null) {
+            return "Erro: campo saidaEntrada é obrigatório";
+        }
+
+        SaidaOuEntrada enumValue;
+
+        try {
+            enumValue = SaidaOuEntrada.valueOf(tipo.toUpperCase());
+        } catch (Exception e) {
+            return "Erro: use ENTRADA ou SAIDA";
         }
 
         Cndb registro = new Cndb();
         registro.setDiaHorario(LocalDateTime.now());
-        registro.setSaidaEntrada(dto.getSaidaEntrada());
+        registro.setSaidaEntrada(enumValue);
 
         repo.save(registro);
 
@@ -38,7 +50,7 @@ public String salvar(@RequestBody Cndb dto) {
 
     } catch (Exception e) {
         e.printStackTrace();
-        return "Erro: " + e.getMessage();
+        return "Erro interno: " + e.getMessage();
     }
 }
 

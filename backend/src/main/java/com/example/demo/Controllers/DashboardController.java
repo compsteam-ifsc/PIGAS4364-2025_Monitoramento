@@ -21,7 +21,6 @@ public class DashboardController {
     @Autowired
     private horarioRepository horarioRepo;
 
-    // ================= RESUMO =================
     @GetMapping("/resumo")
     public Map<String, Object> resumo(
         @RequestParam String inicio,
@@ -51,7 +50,6 @@ public class DashboardController {
         return response;
     }
 
-    // ================= FLUXO =================
     @GetMapping("/fluxo")
     public List<Object[]> fluxoPorHora() {
         return horarioRepo.fluxoPorHora();

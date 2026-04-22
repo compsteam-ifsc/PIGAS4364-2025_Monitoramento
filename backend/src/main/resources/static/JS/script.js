@@ -17,11 +17,10 @@ async function carregarGrafico(data) {
             return;
         }
 
-        // 🔥 agrupa por hora
         const mapaHoras = {};
 
         dados.forEach(item => {
-            const hora = item.diaHorario.substring(11, 13); // pega "HH"
+            const hora = item.diaHorario.substring(11, 13); 
 
             if (!mapaHoras[hora]) {
                 mapaHoras[hora] = 0;
@@ -102,7 +101,6 @@ window.onload = async () => {
     await carregarResumo(hoje);
 };
 
-// atualização automática
 setInterval(async () => {
     const data = document.getElementById("dataInput").value;
 
@@ -111,7 +109,6 @@ setInterval(async () => {
 
 }, 3000);
 
-// troca manual
 document.getElementById("dataInput").addEventListener("change", async (e) => {
     const dataSelecionada = e.target.value;
 
