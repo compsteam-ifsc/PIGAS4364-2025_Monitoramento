@@ -10,7 +10,8 @@ model = YOLO('yolov8n.pt')
 pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
-# 🔥 MUDE AQUI dependendo da câmera
+URL_BACKEND = "http://localhost:8080/api/relatorio"
+
 INVERTER = True  # False = câmera original | True = câmera invertida
 
 def euclid(a, b):

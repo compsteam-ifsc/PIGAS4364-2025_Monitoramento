@@ -8,11 +8,7 @@ from ultralytics import YOLO
 # ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-<<<<<<< HEAD:YOLO/teste.py
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
-=======
-pasta_videos = r"C:\Users\eduardo-heck\Desktop\entrando"
->>>>>>> 561d0ef6b717d49eae63efa7650bb1705e63c636:YOLO/testeC1.py
+pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
 URL_BACKEND = "http://localhost:8080/api/relatorio"
@@ -33,18 +29,10 @@ for arquivo in os.listdir(pasta_videos):
         print("Erro ao abrir:", arquivo)
         continue
 
-<<<<<<< HEAD:YOLO/teste.py
     LINE_Y = 320
     MIN_AREA = 300
     MAX_DIST = 200
     ID_TIMEOUT = 60
-=======
-    
-    LINE_Y = 320       
-    MIN_AREA = 300   
-    MAX_DIST = 200     
-    ID_TIMEOUT = 60   
->>>>>>> 561d0ef6b717d49eae63efa7650bb1705e63c636:YOLO/testeC1.py
     NEXT_ID = 0
 
     entradas = 0
