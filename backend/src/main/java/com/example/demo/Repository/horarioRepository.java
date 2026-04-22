@@ -55,4 +55,6 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
         @Param("fim") LocalDateTime fim,
         @Param("tipo") SaidaOuEntrada tipo
     );
+
+    List<Cndb> findByHorarioBetween(LocalDateTime inicio, LocalDateTime fim);
 }
