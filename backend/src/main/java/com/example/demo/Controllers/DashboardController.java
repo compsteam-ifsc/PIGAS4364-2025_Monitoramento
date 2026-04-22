@@ -1,68 +1,72 @@
 package com.example.demo.Controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.Repository.horarioRepository;
+import com.example.demo.ConexaoDb.SaidaOuEntrada;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.demo.Repository.FiltroRepository;
-import com.example.demo.Repository.horarioRepository;
-
 @RestController
-@RequestMapping("/dashboard")
+@RequestMapping("/api/dashboard")
 public class DashboardController {
-
-    @Autowired
-    private FiltroRepository repository;
 
     @Autowired
     private horarioRepository horarioRepo;
 
-    @GetMapping("/dados")
-    public List<Object[]> fluxoHora() {
+    // ================= RESUMO =================
+    @GetMapping("/resumo")
+    public Map<String, Object> resumo(
+        @RequestParam String inicio,
+        @RequestParam String fim
+    ) {
+
+        LocalDateTime ini = LocalDateTime.parse(inicio);
+        LocalDateTime f = LocalDateTime.parse(fim);
+
+        Long totalEntradas = horarioRepo.contarEntradasNoDia(
+            ini, f, SaidaOuEntrada.ENTRADA
+        );
+
+        LocalDateTime primeiraEntrada = horarioRepo.buscarPrimeiraEntrada(
+            ini, f, SaidaOuEntrada.ENTRADA
+        );
+
+        LocalDateTime ultimaSaida = horarioRepo.buscarUltimaSaida(
+            ini, f, SaidaOuEntrada.SAIDA
+        );
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalEntradas", totalEntradas);
+        response.put("primeiraEntrada", primeiraEntrada);
+        response.put("ultimaSaida", ultimaSaida);
+
+        return response;
+    }
+
+    // ================= FLUXO =================
+    @GetMapping("/fluxo")
+    public List<Object[]> fluxoPorHora() {
         return horarioRepo.fluxoPorHora();
     }
 
+    // ================= 🔥 FILTRO POR DIA (O QUE FALTAVA) =================
     @GetMapping("/filtrado")
-    public List<Object[]> fluxoFiltrado(@RequestParam String data) {
-        LocalDate dataLocal = LocalDate.parse(data);
-        LocalDateTime inicio = dataLocal.atStartOfDay();
-        LocalDateTime fim = dataLocal.atTime(23, 59, 59);
+    public List<Horario> buscarPorData(
+            @RequestParam("data")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate data
+    ) {
 
-        return repository.fluxoPorHoraFiltrado(inicio, fim);
-    }
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.atTime(23, 59, 59);
 
-    @GetMapping("/resumo")
-    public Map<String, Object> resumoDia(@RequestParam String data) {
-        LocalDate dataLocal = LocalDate.parse(data);
-        LocalDateTime inicio = dataLocal.atStartOfDay();
-        LocalDateTime fim = dataLocal.atTime(23, 59, 59);
-
-        Long totalEntradas = horarioRepo.contarEntradasNoDia(inicio, fim);
-        LocalDateTime primeiraEntrada = horarioRepo.buscarPrimeiraEntrada(inicio, fim);
-        LocalDateTime ultimaSaida = horarioRepo.buscarUltimaSaida(inicio, fim);
-
-        Map<String, Object> resumo = new HashMap<>();
-        resumo.put("totalEntradas", totalEntradas != null ? totalEntradas : 0);
-        resumo.put("primeiraEntrada", formatarHora(primeiraEntrada));
-        resumo.put("ultimaSaida", formatarHora(ultimaSaida));
-
-        return resumo;
-    }
-
-    private String formatarHora(LocalDateTime dataHora) {
-        if (dataHora == null) {
-            return "--:--";
-        }
-
-        return dataHora.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        return horarioRepo.findByDiaHorarioBetween(inicio, fim);
     }
 }

@@ -11,12 +11,14 @@ public class Cndb {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "dia_horario")
+    @Column(name = "dia_horario", nullable = false)
     private LocalDateTime diaHorario;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "saida_entrada") 
+    @Column(name = "saida_entrada", nullable = false) 
     private SaidaOuEntrada saidaEntrada;
+
+    public Cndb() {}
 
     public Long getId() { 
         return id; 

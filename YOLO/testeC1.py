@@ -8,7 +8,7 @@ from ultralytics import YOLO
 # ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
+pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
 URL_BACKEND = "http://localhost:8080/api/relatorio"
@@ -16,6 +16,40 @@ URL_BACKEND = "http://localhost:8080/api/relatorio"
 
 def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
+
+
+# 🔥 TESTE DE CONEXÃO COM API
+def testar_api():
+    print("\n[TESTE] Testando API...")
+    try:
+        r = requests.post(URL_BACKEND, json={"saidaEntrada": "ENTRADA"}, timeout=3)
+        print("[TESTE] Status:", r.status_code)
+        print("[TESTE] Resposta:", r.text)
+    except Exception as e:
+        print("[TESTE ERRO]:", e)
+
+
+# 🔥 FUNÇÃO DE ENVIO (com debug forte)
+def enviar(tipo):
+    try:
+        r = requests.post(
+            URL_BACKEND,
+            json={"saidaEntrada": tipo},
+            timeout=3
+        )
+
+        print(f"[API] {tipo} -> Status:", r.status_code)
+
+        if r.status_code != 200:
+            print("[ERRO BACKEND]:", r.text)
+
+    except Exception as e:
+        print("[ERRO API]:", e)
+
+
+# 👉 roda teste antes de tudo
+testar_api()
+
 
 for arquivo in os.listdir(pasta_videos):
     if not arquivo.lower().endswith(extensoes):
@@ -100,7 +134,10 @@ for arquivo in os.listdir(pasta_videos):
             NEXT_ID += 1
 
         # remover antigos
-        to_delete = [tid for tid, t in tracks.items() if frame_count - t['last_seen'] > ID_TIMEOUT]
+        to_delete = [
+            tid for tid, t in tracks.items()
+            if frame_count - t['last_seen'] > ID_TIMEOUT
+        ]
         for tid in to_delete:
             del tracks[tid]
 
@@ -115,28 +152,16 @@ for arquivo in os.listdir(pasta_videos):
                 entradas += 1
                 t['state'] = 'dentro'
 
-                try:
-                    requests.post(URL_BACKEND, json={
-                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        "saidaEntrada": "ENTRADA"  # 🔥 CORRETO
-                    })
-                    print("Entrada enviada")
-                except Exception as e:
-                    print("Erro entrada:", e)
+                print(">>> Entrada detectada")
+                enviar("ENTRADA")
 
             # SAÍDA
             elif prev == 'dentro' and cur == 'fora' and t['hits'] > 1:
                 saidas += 1
                 t['state'] = 'fora'
 
-                try:
-                    requests.post(URL_BACKEND, json={
-                        "diaHorario": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        "saidaEntrada": "SAIDA"  # 🔥 CORRETO
-                    })
-                    print("Saída enviada")
-                except Exception as e:
-                    print("Erro saída:", e)
+                print(">>> Saída detectada")
+                enviar("SAIDA")
 
         # UI
         cv2.line(frame, (0, LINE_Y), (frame.shape[1], LINE_Y), (0,255,255), 2)
