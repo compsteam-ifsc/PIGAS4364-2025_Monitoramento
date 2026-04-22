@@ -10,6 +10,7 @@ import com.example.demo.ConexaoDb.SaidaOuEntrada;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,31 +22,27 @@ public class DashboardController {
     @Autowired
     private horarioRepository horarioRepo;
 
+    // Formato final que o JS espera: "HH:mm"
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+
     @GetMapping("/resumo")
     public Map<String, Object> resumo(
         @RequestParam String inicio,
         @RequestParam String fim
     ) {
-
         LocalDateTime ini = LocalDateTime.parse(inicio);
-        LocalDateTime f = LocalDateTime.parse(fim);
+        LocalDateTime f   = LocalDateTime.parse(fim);
 
-        Long totalEntradas = horarioRepo.contarEntradasNoDia(
-            ini, f, SaidaOuEntrada.ENTRADA
-        );
+        Long totalEntradas = horarioRepo.contarEntradasNoDia(ini, f, SaidaOuEntrada.ENTRADA);
 
-        LocalDateTime primeiraEntrada = horarioRepo.buscarPrimeiraEntrada(
-            ini, f, SaidaOuEntrada.ENTRADA
-        );
-
-        LocalDateTime ultimaSaida = horarioRepo.buscarUltimaSaida(
-            ini, f, SaidaOuEntrada.SAIDA
-        );
+        LocalDateTime primeiraEntrada = horarioRepo.buscarPrimeiraEntrada(ini, f, SaidaOuEntrada.ENTRADA);
+        LocalDateTime ultimaSaida     = horarioRepo.buscarUltimaSaida(ini, f, SaidaOuEntrada.SAIDA);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("totalEntradas", totalEntradas);
-        response.put("primeiraEntrada", primeiraEntrada);
-        response.put("ultimaSaida", ultimaSaida);
+        response.put("totalEntradas",  totalEntradas  != null ? totalEntradas  : 0L);
+        // Retorna "HH:mm" ou null — o JS trata null como "--:--"
+        response.put("primeiraEntrada", primeiraEntrada != null ? primeiraEntrada.format(FORMATTER) : null);
+        response.put("ultimaSaida",     ultimaSaida     != null ? ultimaSaida.format(FORMATTER)     : null);
 
         return response;
     }
@@ -61,10 +58,8 @@ public class DashboardController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate data
     ) {
-
         LocalDateTime inicio = data.atStartOfDay();
-        LocalDateTime fim = data.atTime(23, 59, 59);
-
+        LocalDateTime fim    = data.atTime(23, 59, 59);
         return horarioRepo.findByDiaHorarioBetween(inicio, fim);
     }
 }
