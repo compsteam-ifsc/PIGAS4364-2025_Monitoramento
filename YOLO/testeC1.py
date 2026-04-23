@@ -8,7 +8,7 @@ from ultralytics import YOLO
 # ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\eduardo-heck\Desktop\saindo"
+pasta_videos = r"C:\Users\eduardo-heck\Desktop\teste"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
 URL_BACKEND = "http://localhost:8080/api/relatorio"
@@ -18,7 +18,6 @@ def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
 
 
-# 🔥 TESTE DE CONEXÃO COM API
 def testar_api():
     print("\n[TESTE] Testando API...")
     try:
@@ -29,7 +28,6 @@ def testar_api():
         print("[TESTE ERRO]:", e)
 
 
-# 🔥 FUNÇÃO DE ENVIO (com debug forte)
 def enviar(tipo):
     try:
         r = requests.post(
@@ -47,7 +45,6 @@ def enviar(tipo):
         print("[ERRO API]:", e)
 
 
-# 👉 roda teste antes de tudo
 testar_api()
 
 

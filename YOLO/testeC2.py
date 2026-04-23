@@ -1,21 +1,55 @@
 import os
-import torch
 import cv2
-from ultralytics import YOLO
-import time
 import math
+import requests
+from ultralytics import YOLO
 
+# ---------------- CONFIG ----------------
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
+pasta_videos = r"C:\Users\eduardo-heck\Desktop\teste"
 extensoes = ('.mp4', '.avi', '.mkv', '.mov')
 
 URL_BACKEND = "http://localhost:8080/api/relatorio"
 
-INVERTER = True  # False = câmera original | True = câmera invertida
+INVERTER = True  # False = normal | True = invertido
+# ---------------------------------------
+
 
 def euclid(a, b):
     return math.hypot(a[0]-b[0], a[1]-b[1])
+
+
+def testar_api():
+    print("\n[TESTE] Testando API...")
+    try:
+        r = requests.post(URL_BACKEND, json={"saidaEntrada": "ENTRADA"}, timeout=3)
+        print("[TESTE] Status:", r.status_code)
+        print("[TESTE] Resposta:", r.text)
+    except Exception as e:
+        print("[TESTE ERRO]:", e)
+
+
+def enviar(tipo):
+    try:
+        r = requests.post(
+            URL_BACKEND,
+            json={"saidaEntrada": tipo},
+            timeout=3
+        )
+
+        print(f"[API] {tipo} -> Status:", r.status_code)
+
+        if r.status_code != 200:
+            print("[ERRO BACKEND]:", r.text)
+
+    except Exception as e:
+        print("[ERRO API]:", e)
+
+
+# testa API antes de rodar
+testar_api()
+
 
 for arquivo in os.listdir(pasta_videos):
     if not arquivo.lower().endswith(extensoes):
@@ -29,13 +63,14 @@ for arquivo in os.listdir(pasta_videos):
         print("Erro ao abrir:", arquivo)
         continue
 
-    LINE_Y = 265      
-    MIN_AREA = 300   
-    MAX_DIST = 200     
-    ID_TIMEOUT = 60   
+    # CONFIG TRACKING
+    LINE_Y = 320
+    MIN_AREA = 300
+    MAX_DIST = 200
+    ID_TIMEOUT = 60
     NEXT_ID = 0
 
-    entradas = 0    
+    entradas = 0
     saidas = 0
     dentro = 0
     fora = 0
@@ -47,6 +82,7 @@ for arquivo in os.listdir(pasta_videos):
         ret, frame = cap.read()
         if not ret:
             break
+
         frame_count += 1
 
         results = model.predict(frame, conf=0.3, imgsz=960, classes=[0], verbose=False)
@@ -56,22 +92,25 @@ for arquivo in os.listdir(pasta_videos):
             for box in results[0].boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 area = (x2-x1)*(y2-y1)
+
                 if area < MIN_AREA:
                     continue
+
                 cx = int((x1+x2)/2)
                 cy = int((y1+y2)/2)
-                dets.append({'box':(x1,y1,x2,y2),'cx':cx,'cy':cy})
 
+                dets.append({'cx': cx, 'cy': cy})
+
+        # ---------------- TRACKING ----------------
         unmatched_dets = []
-        used_track_ids = set()
+        used_ids = set()
 
-        # 🔗 ASSOCIA DETECÇÕES A TRACKS
         for d in dets:
             best_id = None
             best_dist = 1e9
 
             for tid, t in tracks.items():
-                if tid in used_track_ids:
+                if tid in used_ids:
                     continue
 
                 dist = euclid((d['cx'], d['cy']), (t['cx'], t['cy']))
@@ -85,12 +124,11 @@ for arquivo in os.listdir(pasta_videos):
                 tracks[best_id]['cy'] = d['cy']
                 tracks[best_id]['last_seen'] = frame_count
                 tracks[best_id]['hits'] += 1
-                used_track_ids.add(best_id)
-                d['assigned_id'] = best_id
+                used_ids.add(best_id)
             else:
                 unmatched_dets.append(d)
 
-        # 🆕 CRIA NOVOS TRACKS
+        # novos IDs
         for d in unmatched_dets:
             tracks[NEXT_ID] = {
                 'cx': d['cx'],
@@ -99,49 +137,54 @@ for arquivo in os.listdir(pasta_videos):
                 'state': ('dentro' if d['cy'] < LINE_Y else 'fora'),
                 'hits': 1
             }
-            d['assigned_id'] = NEXT_ID
             NEXT_ID += 1
 
-        # 🗑️ REMOVE TRACKS ANTIGOS
-        to_delete = [tid for tid, t in tracks.items() if frame_count - t['last_seen'] > ID_TIMEOUT]
+        # limpar tracks antigos
+        to_delete = [
+            tid for tid, t in tracks.items()
+            if frame_count - t['last_seen'] > ID_TIMEOUT
+        ]
         for tid in to_delete:
             del tracks[tid]
 
-        # 🔥 CONTAGEM (COM SUPORTE A INVERSÃO)
-        for tid, t in list(tracks.items()):
+        # ---------------- CONTAGEM (COM INVERSÃO) ----------------
+        for tid, t in tracks.items():
             cy = t['cy']
-            prev_state = t['state']
-            cur_state = 'fora' if cy > LINE_Y else 'dentro'
+            prev = t['state']
+            cur = 'fora' if cy > LINE_Y else 'dentro'
 
-            if not INVERTER:
-                # câmera normal
-                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
-                    entradas += 1
-                    dentro += 1
-                    if fora > 0: fora -= 1
-                    tracks[tid]['state'] = 'dentro'
+            if t['hits'] <= 1:
+                continue
 
-                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
-                    saidas += 1
-                    if dentro > 0: dentro -= 1
-                    fora += 1
-                    tracks[tid]['state'] = 'fora'
+            # lógica base
+            entrou = (prev == 'fora' and cur == 'dentro')
+            saiu = (prev == 'dentro' and cur == 'fora')
 
-            else:
-                # câmera invertida
-                if prev_state == 'fora' and cur_state == 'dentro' and t['hits'] > 1:
-                    saidas += 1
-                    if dentro > 0: dentro -= 1
-                    fora += 1
-                    tracks[tid]['state'] = 'dentro'
+            # inverter se necessário
+            if INVERTER:
+                entrou, saiu = saiu, entrou
 
-                elif prev_state == 'dentro' and cur_state == 'fora' and t['hits'] > 1:
-                    entradas += 1
-                    dentro += 1
-                    if fora > 0: fora -= 1
-                    tracks[tid]['state'] = 'fora'
+            if entrou:
+                entradas += 1
+                dentro += 1
+                if fora > 0:
+                    fora -= 1
 
-        # 🎨 DESENHO NA TELA
+                tracks[tid]['state'] = cur
+                print(">>> Entrada detectada")
+                enviar("ENTRADA")
+
+            elif saiu:
+                saidas += 1
+                fora += 1
+                if dentro > 0:
+                    dentro -= 1
+
+                tracks[tid]['state'] = cur
+                print(">>> Saída detectada")
+                enviar("SAIDA")
+
+        # ---------------- UI ----------------
         cv2.line(frame, (0, LINE_Y), (frame.shape[1], LINE_Y), (0,255,255), 2)
 
         cv2.putText(frame, f"{arquivo}", (20,30),
