@@ -9,13 +9,7 @@
     import java.nio.charset.StandardCharsets;
     import java.util.Date;
 
-    /**
-     * Utilitário JWT: gera e valida tokens para acesso à API pelo Python (YOLO).
-     *
-     * Configurar em application.properties:
-     *   jwt.secret=MinhaChaveSecretaSuperSecura256BitsAqui!!
-     *   jwt.expiration-ms=86400000   # 24 horas
-     */
+   
     @Component
     public class JwtUtil {
 
