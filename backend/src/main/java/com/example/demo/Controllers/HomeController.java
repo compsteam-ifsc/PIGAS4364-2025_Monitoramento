@@ -14,6 +14,6 @@ public class HomeController {
         String nomeUsuario = (principal != null) ? principal.getName() : "Usuário";
         model.addAttribute("nomeUsuario", nomeUsuario);
 
-        return "index";
+        return "relatorioDiario";
     }
 }

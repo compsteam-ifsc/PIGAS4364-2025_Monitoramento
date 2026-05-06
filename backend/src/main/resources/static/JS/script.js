@@ -51,11 +51,12 @@ function getAuthHeaders() {
 
 // ---------------- GRAFICO ----------------
 
-async function carregarGrafico(data) {
+async function carregarGrafico(data, horaInicio, horaFim) {
     if (!data) return;
 
     try {
-        const response = await fetch(`/api/dashboard/filtrado?data=${data}`, {
+        const url = `/api/dashboard/filtrado?data=${data}&horaInicio=${horaInicio}&horaFim=${horaFim}`;
+        const response = await fetch(url, {
             headers: getAuthHeaders()
         });
 
@@ -134,22 +135,24 @@ async function carregarGrafico(data) {
 
 // ---------------- RESUMO ----------------
 
-async function carregarResumo(data) {
+async function carregarResumo(data, horaInicio, horaFim) {
 
-    const elEntradas = document.getElementById("totalEntradas");
-    const elPrimeira = document.getElementById("primeiraEntrada");
-    const elUltima   = document.getElementById("ultimaSaida");
+    const elEntradas  = document.getElementById("totalEntradas");
+    const elPrimeira  = document.getElementById("primeiraEntrada");
+    const elUltima    = document.getElementById("ultimaSaida");
+    const elPresentes = document.getElementById("pessoasPresentes");
 
     if (!data) {
-        elEntradas.textContent = "--";
-        elPrimeira.textContent = "--:--";
-        elUltima.textContent   = "--:--";
+        elEntradas.textContent  = "--";
+        elPrimeira.textContent  = "--:--";
+        elUltima.textContent    = "--:--";
+        elPresentes.textContent = "--";
         return;
     }
 
     try {
-        const inicio = data + "T00:00:00";
-        const fim    = data + "T23:59:59";
+        const inicio = `${data}T${String(horaInicio).padStart(2,'0')}:00:00`;
+        const fim    = `${data}T${String(horaFim).padStart(2,'0')}:59:59`;
 
         const response = await fetch(`/api/dashboard/resumo?inicio=${inicio}&fim=${fim}`, {
             headers: getAuthHeaders()
@@ -162,9 +165,16 @@ async function carregarResumo(data) {
 
         const resumo = await response.json();
 
-        elEntradas.textContent = resumo.totalEntradas ?? 0;
-        elPrimeira.textContent = exibirHorario(resumo.primeiraEntrada);
-        elUltima.textContent   = exibirHorario(resumo.ultimaSaida);
+        elEntradas.textContent  = resumo.totalEntradas ?? 0;
+        elPrimeira.textContent  = exibirHorario(resumo.primeiraEntrada);
+        elUltima.textContent    = exibirHorario(resumo.ultimaSaida);
+        elPresentes.textContent = resumo.pessoasPresentes ?? 0;
+
+        // Destaque visual: verde se há pessoas, cinza se vazio
+        const box = elPresentes.closest('.stat-box');
+        if (box) {
+            box.classList.toggle('stat-box--ativo', (resumo.pessoasPresentes ?? 0) > 0);
+        }
 
     } catch (e) {
         console.error("Erro resumo:", e);
@@ -175,21 +185,35 @@ async function carregarResumo(data) {
 
 window.onload = async () => {
 
-    const inputData = document.getElementById("dataInput");
+    const inputData      = document.getElementById("dataInput");
+    const inputHoraIni   = document.getElementById("horaInicio");
+    const inputHoraFim   = document.getElementById("horaFim");
 
     const hoje = new Date().toLocaleDateString('en-CA');
-    inputData.value = hoje;
+    inputData.value    = hoje;
+    inputHoraIni.value = "00";
+    inputHoraFim.value = "23";
 
-    await carregarGrafico(hoje);
-    await carregarResumo(hoje);
+    const atualizar = async () => {
+        const data = inputData.value;
+        const hIni = inputHoraIni.value || "00";
+        const hFim = inputHoraFim.value || "23";
+        await carregarGrafico(data, hIni, hFim);
+        await carregarResumo(data, hIni, hFim);
+    };
 
-    inputData.addEventListener("change", async (e) => {
-        await carregarGrafico(e.target.value);
-        await carregarResumo(e.target.value);
+    await atualizar();
+
+    inputData.addEventListener("change", atualizar);
+    inputHoraIni.addEventListener("change", atualizar);
+    inputHoraFim.addEventListener("change", atualizar);
+
+    // Revalida que horaFim >= horaInicio
+    inputHoraIni.addEventListener("change", () => {
+        if (parseInt(inputHoraFim.value) < parseInt(inputHoraIni.value)) {
+            inputHoraFim.value = inputHoraIni.value;
+        }
     });
 
-    setInterval(async () => {
-        await carregarGrafico(inputData.value);
-        await carregarResumo(inputData.value);
-    }, 5000);
+    setInterval(atualizar, 5000);
 };
