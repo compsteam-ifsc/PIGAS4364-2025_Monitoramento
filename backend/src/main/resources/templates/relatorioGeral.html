@@ -3,18 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório Semanal</title>
+  <title>Relatório Geral</title>
 
   <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
 </head>
 <body>
-  <div class="nav-switch">
- <button id="btnRelatorio" onclick="alternarRelatorio()">
- Pagina Inicial
- </button>
-    
- 
-</div>
+     <div class="nav-switch">
+         <button id="btnRelatorio" onclick="alternarRelatorio()">
+                Pagina inicial
+         </button>
+    </div>
 
 <header class="top-bar">
 
@@ -25,19 +23,17 @@
   </div>
 
   <div class="top-center">
-    <h1 class="page-title">Relatório Semanal</h1>
+    <h1 class="page-title">Relatório Geral</h1>
 
     <div class="date-wrapper">
-      <label class="date-label">Selecione uma data</label>
-      <input type="date" id="dataInput">
+      <label class="date-label">Selecione a Data Inicial</label>
+      <input type="date" id="dataInicio">
     </div>
-
+    
     <div class="date-wrapper">
-      <span class="date-label">Semana:</span>
-      <span id="semanaLabel">--</span>
-    </div>
-  </div>
-
+         <label class="date-label">Selecione a Data final</label>
+          <input type="date" id="dataFim">
+      </div>
   <div class="user-area">
     <img src="/img/comp.png" class="logo-projeto">
 
@@ -55,7 +51,7 @@
   <!-- GRÁFICO -->
   <section class="card chart-card">
     <div class="chart-header">
-      <h2 class="section-title">Movimentação da Semana</h2>
+      <h2 class="section-title">Movimentação Geral</h2>
     </div>
 
     <div class="chart-wrapper">
@@ -65,7 +61,7 @@
 
   <!-- RESUMO -->
   <section class="card info-card">
-    <h2 class="info-title">Resumo da Semana</h2>
+    <h2 class="info-title">Resumo Geral</h2>
 
     <div class="stats-grid">
 
@@ -84,10 +80,7 @@
         <span class="stat-value" id="diaPico">--</span>
       </div>
 
-      <div class="stat-box">
-        <span class="stat-label">Média por dia</span>
-        <span class="stat-value" id="mediaEntradas">--</span>
-      </div>
+      
 
     </div>
   </section>
@@ -95,7 +88,7 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/JS/semanal.js"></script>
+<script src="/JS/geral.js"></script>
 
 </body>
 </html>

@@ -351,15 +351,22 @@ body {
   background-position: right 10px center;
   background-size: 16px;
 
-  padding-right: 34px; /* espaço pra seta */
+  padding-right: 34px; 
 }
 
-.time-select:hover {
-  border-color: var(--accent);
-}
+
 
 .time-select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
 }
+/* CONTAINER DO BOTÃO */
+.nav-switch {
+  max-width: 1180px;
+  margin: 0 auto 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+

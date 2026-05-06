@@ -1,5 +1,17 @@
 let grafico = null;
 
+// ---------------- BOTÃO ----------------
+
+function alternarRelatorio() {
+    const path = window.location.pathname;
+
+    if (path.includes("/Grafico/Diario")) {
+        window.location.href = "/Grafico/Semanal";
+    } else {
+        window.location.href = "/Grafico/Diario";
+    }
+}
+
 // ---------------- UTIL ----------------
 
 function extrairHora(diaHorario) {
@@ -33,23 +45,14 @@ function exibirHorario(valor) {
     return '--:--';
 }
 
-// ---------------- HEADER INTELIGENTE ----------------
+// ---------------- AUTH ----------------
 
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
-
-    // Se tiver token → usa JWT
-    if (token) {
-        return {
-            "Authorization": "Bearer " + token
-        };
-    }
-
-    // Se não tiver → usa sessão (cookie automático)
-    return {};
+    return token ? { "Authorization": "Bearer " + token } : {};
 }
 
-// ---------------- GRAFICO ----------------
+// ---------------- GRÁFICO ----------------
 
 async function carregarGrafico(data, horaInicio, horaFim) {
     if (!data) return;
@@ -67,11 +70,6 @@ async function carregarGrafico(data, horaInicio, horaFim) {
 
         const dados = await response.json();
 
-        if (!Array.isArray(dados)) {
-            console.error("Resposta inválida:", dados);
-            return;
-        }
-
         const mapaHoras = {};
 
         dados.forEach(item => {
@@ -80,11 +78,22 @@ async function carregarGrafico(data, horaInicio, horaFim) {
             mapaHoras[hora] = (mapaHoras[hora] || 0) + 1;
         });
 
-        const horasOrdenadas = Object.keys(mapaHoras)
-            .sort((a, b) => parseInt(a) - parseInt(b));
+        // 🔥 AQUI: força TODAS as horas
+        const labels = [];
+        const valores = [];
 
-        const labels  = horasOrdenadas.map(h => h + ":00");
-        const valores = horasOrdenadas.map(h => mapaHoras[h]);
+        for (let h = 0; h <= 23; h++) {
+            const horaStr = String(h).padStart(2, '0');
+
+            // respeita filtro selecionado
+            if (h < parseInt(horaInicio) || h > parseInt(horaFim)) continue;
+
+            labels.push(horaStr + ":00");
+            valores.push(mapaHoras[horaStr] || 0);
+        }
+
+        const ctx = document.getElementById('barChart')?.getContext('2d');
+        if (!ctx) return;
 
         if (grafico) {
             grafico.data.labels = labels;
@@ -93,10 +102,8 @@ async function carregarGrafico(data, horaInicio, horaFim) {
             return;
         }
 
-        const ctx = document.getElementById('barChart').getContext('2d');
-
         grafico = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels,
                 datasets: [{
@@ -106,8 +113,7 @@ async function carregarGrafico(data, horaInicio, horaFim) {
                     borderColor: 'rgba(37, 99, 235, 0.85)',
                     borderWidth: 2,
                     borderRadius: 10,
-                    borderSkipped: false,
-                    hoverBackgroundColor: 'rgba(37, 99, 235, 0.35)'
+                    borderSkipped: false
                 }]
             },
             options: {
@@ -117,9 +123,7 @@ async function carregarGrafico(data, horaInicio, horaFim) {
                     legend: { display: false }
                 },
                 scales: {
-                    x: {
-                        grid: { display: false }
-                    },
+                    x: { grid: { display: false } },
                     y: {
                         beginAtZero: true,
                         ticks: { stepSize: 1 }
@@ -142,13 +146,7 @@ async function carregarResumo(data, horaInicio, horaFim) {
     const elUltima    = document.getElementById("ultimaSaida");
     const elPresentes = document.getElementById("pessoasPresentes");
 
-    if (!data) {
-        elEntradas.textContent  = "--";
-        elPrimeira.textContent  = "--:--";
-        elUltima.textContent    = "--:--";
-        elPresentes.textContent = "--";
-        return;
-    }
+    if (!data) return;
 
     try {
         const inicio = `${data}T${String(horaInicio).padStart(2,'0')}:00:00`;
@@ -170,12 +168,6 @@ async function carregarResumo(data, horaInicio, horaFim) {
         elUltima.textContent    = exibirHorario(resumo.ultimaSaida);
         elPresentes.textContent = resumo.pessoasPresentes ?? 0;
 
-        // Destaque visual: verde se há pessoas, cinza se vazio
-        const box = elPresentes.closest('.stat-box');
-        if (box) {
-            box.classList.toggle('stat-box--ativo', (resumo.pessoasPresentes ?? 0) > 0);
-        }
-
     } catch (e) {
         console.error("Erro resumo:", e);
     }
@@ -183,37 +175,32 @@ async function carregarResumo(data, horaInicio, horaFim) {
 
 // ---------------- INIT ----------------
 
-window.onload = async () => {
+window.addEventListener("load", async () => {
 
-    const inputData      = document.getElementById("dataInput");
-    const inputHoraIni   = document.getElementById("horaInicio");
-    const inputHoraFim   = document.getElementById("horaFim");
+    const inputData    = document.getElementById("dataInput");
+    const inputHoraIni = document.getElementById("horaInicio");
+    const inputHoraFim = document.getElementById("horaFim");
 
     const hoje = new Date().toLocaleDateString('en-CA');
-    inputData.value    = hoje;
-    inputHoraIni.value = "00";
-    inputHoraFim.value = "23";
+
+    if (inputData) inputData.value = hoje;
+    if (inputHoraIni) inputHoraIni.value = "00";
+    if (inputHoraFim) inputHoraFim.value = "23";
 
     const atualizar = async () => {
-        const data = inputData.value;
-        const hIni = inputHoraIni.value || "00";
-        const hFim = inputHoraFim.value || "23";
+        const data = inputData?.value;
+        const hIni = inputHoraIni?.value || "00";
+        const hFim = inputHoraFim?.value || "23";
+
         await carregarGrafico(data, hIni, hFim);
         await carregarResumo(data, hIni, hFim);
     };
 
     await atualizar();
 
-    inputData.addEventListener("change", atualizar);
-    inputHoraIni.addEventListener("change", atualizar);
-    inputHoraFim.addEventListener("change", atualizar);
-
-    // Revalida que horaFim >= horaInicio
-    inputHoraIni.addEventListener("change", () => {
-        if (parseInt(inputHoraFim.value) < parseInt(inputHoraIni.value)) {
-            inputHoraFim.value = inputHoraIni.value;
-        }
-    });
+    inputData?.addEventListener("change", atualizar);
+    inputHoraIni?.addEventListener("change", atualizar);
+    inputHoraFim?.addEventListener("change", atualizar);
 
     setInterval(atualizar, 5000);
-};
+});

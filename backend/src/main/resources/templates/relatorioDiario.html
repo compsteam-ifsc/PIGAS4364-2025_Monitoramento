@@ -7,7 +7,16 @@
 
   <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
 </head>
+
 <body>
+
+  <div class="nav-switch">
+ <button id="btnRelatorio" onclick="alternarRelatorio()">
+Pagina Inicial
+ </button>
+    
+  
+</div>
 
   <header class="top-bar">
 
@@ -30,12 +39,13 @@
         <input type="date" id="dataInput">
       </div>
 
-      <!-- HORÁRIO (NOVO PADRÃO) -->
+      <!-- HORÁRIO -->
       <div class="time-wrapper">
         <label class="date-label">Intervalo de horário</label>
 
         <div class="time-range">
           <span>De</span>
+
           <select id="horaInicio" class="time-select">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
@@ -66,6 +76,7 @@
           <span>—</span>
 
           <span>Até</span>
+
           <select id="horaFim" class="time-select">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
@@ -98,7 +109,6 @@
 
     <!-- DIREITA -->
     <div class="user-area">
-
       <img src="/img/comp.png" alt="Projeto" class="logo-projeto">
 
       <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
@@ -106,7 +116,6 @@
       <form th:action="@{/logout}" method="post" class="logout-top">
         <button type="submit">Logout</button>
       </form>
-
     </div>
 
   </header>

@@ -57,4 +57,28 @@ public interface horarioRepository extends JpaRepository<Cndb, Long> {
     );
 
     List<Cndb> findByDiaHorarioBetween(LocalDateTime inicio, LocalDateTime fim);
+
+    @Query("""
+        SELECT FUNCTION('DAYOFWEEK', c.diaHorario), FUNCTION('DATE', c.diaHorario), COUNT(c)
+        FROM Cndb c
+        WHERE c.diaHorario BETWEEN :inicio AND :fim
+        GROUP BY FUNCTION('DATE', c.diaHorario), FUNCTION('DAYOFWEEK', c.diaHorario)
+        ORDER BY FUNCTION('DATE', c.diaHorario)
+    """)
+    List<Object[]> fluxoPorDia(
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+        SELECT FUNCTION('DATE', c.diaHorario), c.saidaEntrada, COUNT(c)
+        FROM Cndb c
+        WHERE c.diaHorario BETWEEN :inicio AND :fim
+        GROUP BY FUNCTION('DATE', c.diaHorario), c.saidaEntrada
+        ORDER BY FUNCTION('DATE', c.diaHorario)
+    """)
+    List<Object[]> fluxoPorDiaTipo(
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }

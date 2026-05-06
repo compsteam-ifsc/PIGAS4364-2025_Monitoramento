@@ -1,12 +1,9 @@
 package com.example.demo;
 
-import com.example.demo.JwtAuthFilter;
 import com.example.demo.sevices.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,8 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 public class securityConfig {
@@ -32,82 +27,59 @@ public class securityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
-        csrfHandler.setCsrfRequestAttributeName(null);
-
         http
-            // ---------------- CSRF ----------------
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(csrfHandler)
-                .ignoringRequestMatchers("/api/**") // API usa JWT
-            )
+            // Desabilita CSRF (API/JWT geralmente precisa disso)
+            .csrf(csrf -> csrf.disable())
 
-            // ---------------- ROTAS ----------------
+            // Configuração de rotas
             .authorizeHttpRequests(auth -> auth
 
-                // públicas
+                // 🔓 ROTAS PÚBLICAS
                 .requestMatchers(
-                    "/login",
-                    "/auth/register",
-                    "/css/**",
-                    "/JS/**",
-                    "/img/**"
+                        "/login",
+                        "/api/auth/login",
+
+                        // ARQUIVOS ESTÁTICOS
+                        "/css/**",
+                        "/js/**",
+                        "/img/**",
+                        "/images/**",
+                        "/webjars/**",
+                        "/**/*.css",
+                        "/**/*.js"
                 ).permitAll()
 
-                // login API
-                .requestMatchers("/api/auth/login").permitAll()
-
-                // 🔴 SÓ ADMIN escreve dados
-                .requestMatchers("/api/relatorio").hasRole("ADMIN")
-
-                // 🟢 QUALQUER LOGADO pode ver dashboard
+                // 🔒 ROTAS PROTEGIDAS
+                .requestMatchers("/api/relatorio/**").hasRole("ADMIN")
                 .requestMatchers("/api/dashboard/**").authenticated()
 
-                // resto precisa login
+                // 🔐 QUALQUER OUTRA REQUISIÇÃO
                 .anyRequest().authenticated()
             )
 
-            // ---------------- LOGIN WEB ----------------
+            // Login com formulário
             .formLogin(form -> form
                 .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/Grafico", true)
-                .failureUrl("/login?error=true")
+                .defaultSuccessUrl("/Grafico/Diario", true)
                 .permitAll()
             )
 
-            // ---------------- LOGOUT ----------------
+            // Logout
             .logout(logout -> logout
-                .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             )
 
-            // ---------------- SESSÃO ----------------
+            // Sessão
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
-            // ---------------- JWT ----------------
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-
-            .authenticationProvider(authProvider());
+            // Filtro JWT antes do padrão
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
 }
