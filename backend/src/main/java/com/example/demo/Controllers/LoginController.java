@@ -21,22 +21,25 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class LoginController {
 
-    
     @Autowired
     private PasswordEncoder encoder;
 
     @Autowired
-private usuarioService us;
+    private usuarioService us;
 
     @GetMapping("/login")
     public String mostrarLogin() {
         return "cadastroLogin";
     }
 
-     @PostMapping("/processar-login")
-    public String autenticar(@RequestParam String user, @RequestParam String pass, RedirectAttributes redirectAttributes, HttpServletRequest request ) {
-       try {
+    @PostMapping("/processar-login")
+    public String autenticar(@RequestParam String user,
+                             @RequestParam String pass,
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request) {
+        try {
             UserDetails userDetails = us.login(user, pass);
+
             if (userDetails != null && encoder.matches(pass, userDetails.getPassword())) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -45,7 +48,6 @@ private usuarioService us;
                                 userDetails.getAuthorities()
                         );
 
-          
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(authToken);
                 SecurityContextHolder.setContext(context);
@@ -59,7 +61,8 @@ private usuarioService us;
                 redirectAttributes.addFlashAttribute("message", "Login realizado com sucesso");
                 redirectAttributes.addFlashAttribute("alertClass", "alert-success");
 
-                return "redirect:/Grafico";
+               
+                return "redirect:/Pagina-Inicial";
             }
 
             redirectAttributes.addFlashAttribute("message", "Usuário ou senha inválidos");

@@ -17,19 +17,20 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@RequestParam String registerUser,
-                       @RequestParam String registerPass, RedirectAttributes redirectAttributes) {
-     
+                           @RequestParam String registerPass,
+                           RedirectAttributes redirectAttributes) {
+
         String retorno = service.register(registerUser, registerPass);
-        if(retorno == "OK"){
-            redirectAttributes.addFlashAttribute("message", " Cadastro realizado com sucesso");
+
+        // BUG CORRIGIDO: comparação de String com == trocada por .equals()
+        if ("OK".equals(retorno)) {
+            redirectAttributes.addFlashAttribute("message", "Cadastro realizado com sucesso");
             redirectAttributes.addFlashAttribute("alertClass", "alert-success");
-            return "redirect:/login" ;
-        } else{
-            redirectAttributes.addFlashAttribute("message", " Erro ao cadastrar usuareio");
+            return "redirect:/login";
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Erro ao cadastrar usuário");
             redirectAttributes.addFlashAttribute("alertClass", "alert-danger");
-            return "redirect:/auth/register" ;
-            
+            return "redirect:/login";
         }
     }
-   
 }

@@ -30,18 +30,19 @@ public class securityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // Desabilita CSRF (API/JWT geralmente precisa disso)
             .csrf(csrf -> csrf.disable())
 
-            // Configuração de rotas
             .authorizeHttpRequests(auth -> auth
-
-                
                 .requestMatchers(
                         "/login",
+                        // BUG CORRIGIDO: faltava liberar o endpoint de POST do login manual
+                        "/processar-login",
+                        // BUG CORRIGIDO: faltava liberar registro de usuário
+                        "/auth/register",
                         "/api/auth/login",
                         "/css/**",
-                        "/js/**",
+                        // BUG CORRIGIDO: pasta era "/js/**" mas os arquivos ficam em "/JS/**"
+                        "/JS/**",
                         "/img/**",
                         "/images/**",
                         "/webjars/**",
@@ -55,24 +56,20 @@ public class securityConfig {
                 .anyRequest().authenticated()
             )
 
-                .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/Pagina-Inicial", true)
-                .permitAll()
-            )
+            // BUG CORRIGIDO: o formLogin do Spring estava interceptando POST /login e
+            // conflitando com o LoginController manual. Como o login é feito manualmente
+            // pelo LoginController via /processar-login, desabilitamos o formLogin padrão.
+            .formLogin(form -> form.disable())
 
-            
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             )
 
-            
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
-            // Filtro JWT antes do padrão
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
