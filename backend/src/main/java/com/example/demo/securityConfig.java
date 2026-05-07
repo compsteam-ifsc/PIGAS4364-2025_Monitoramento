@@ -41,7 +41,7 @@ public class securityConfig {
                         "/login",
                         "/api/auth/login",
 
-                        // ARQUIVOS ESTÁTICOS
+                       
                         "/css/**",
                         "/js/**",
                         "/img/**",
@@ -51,33 +51,31 @@ public class securityConfig {
                         "/**/*.js"
                 ).permitAll()
 
-                // 🔒 ROTAS PROTEGIDAS
+                
                 .requestMatchers("/api/relatorio/**").hasRole("ADMIN")
                 .requestMatchers("/api/dashboard/**").authenticated()
 
-                // 🔐 QUALQUER OUTRA REQUISIÇÃO
                 .anyRequest().authenticated()
             )
 
-            // Login com formulário
+            
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/Grafico/Diario", true)
+                .defaultSuccessUrl("/Pagina-Inicial", true)
                 .permitAll()
             )
 
-            // Logout
+           
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             )
 
-            // Sessão
+          
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
 
-            // Filtro JWT antes do padrão
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

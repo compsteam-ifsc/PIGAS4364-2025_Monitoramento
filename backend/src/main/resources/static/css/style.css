@@ -43,20 +43,29 @@ body {
 ========================= */
 .top-bar {
   max-width: 1180px;
-  margin: 0 auto 32px;
+  margin: 0 auto 28px;
+
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 180px 1fr 260px;
+
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 }
 
-.top-logo { justify-self: start; }
-.logo-ifsc { width: 140px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08)); }
+
+.top-logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.logo-ifsc {
+  width: 150px;
+  object-fit: contain;
+}
 
 /* CENTRO */
 .top-center {
   text-align: center;
-  justify-self: center;
 }
 
 .page-title {
@@ -66,6 +75,7 @@ body {
   letter-spacing: -0.02em;
   color: var(--text-1);
   line-height: 1.1;
+  margin-bottom: 10px;
 }
 
 .date-wrapper {
@@ -84,47 +94,53 @@ body {
   color: var(--text-3);
 }
 
-#dataInput {
+input[type="date"] {
   padding: 9px 14px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
   background: var(--surface);
+
   font-family: 'DM Sans', sans-serif;
   font-size: 0.9rem;
   color: var(--text-1);
+
   width: 170px;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+
   box-shadow: var(--shadow-sm);
 }
 
-#dataInput:focus {
+input[type="date"]:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+
+  box-shadow:
+    0 0 0 3px rgba(37,99,235,0.12);
 }
 
 /* DIREITA */
 .user-area {
-  justify-self: end;
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .logo-projeto {
-  width: 140px;
-  height: 126px;
+  width: 90px;
+  height: auto;
   object-fit: contain;
-  opacity: 0.9;
-  border-radius: 10px;
+  opacity: 0.95;
 }
 
 .user-name {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--text-2);
-  white-space: nowrap;
 }
 
 .logout-top button {
@@ -370,3 +386,59 @@ body {
 }
 
 
+/* ===== BOTÃO PÁGINA INICIAL ===== */
+#btnRelatorio {
+  background: #7c6af7;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  box-shadow: 0 4px 20px rgba(124, 106, 247, 0.18);
+}
+
+/* brilho igual login */
+#btnRelatorio::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.12) 0%,
+      transparent 60%
+    );
+
+  pointer-events: none;
+}
+
+/* hover */
+#btnRelatorio:hover {
+  background: #8f7fff;
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 28px rgba(124, 106, 247, 0.35);
+}
+
+/* clique */
+#btnRelatorio:active {
+  transform: translateY(0);
+
+  box-shadow:
+    0 2px 10px rgba(124, 106, 247, 0.18);
+}
