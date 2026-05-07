@@ -4,52 +4,59 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Comp / Steam — Relatórios</title>
+
   <link rel="stylesheet" th:href="@{/css/paginaInicial.css}">
 </head>
+
 <body>
 
-<div class="container">
-  <div class="box">
-
-    <div class="brand-header">
-      <div class="brand-name">
-        <span class="comp">Comp</span><span class="divider">/</span><span class="steam">Steam</span>
-      </div>
-    </div>
-
-    <h2>Relatórios</h2>
-    <p class="subtitle">Selecione o tipo de relatório que deseja visualizar.</p>
-
-    <button class="btn-report" onclick="irPara('diario')">
-      
-      <div class="btn-text">
-        <div class="label">Relatório Diário</div>
-        <div class="desc">Dados e registros do dia atual</div>
-      </div>
-      <span class="btn-arrow">→</span>
-    </button>
-
-    <button class="btn-report" onclick="irPara('semanal')">
-      
-      <div class="btn-text">
-        <div class="label">Relatório Semanal</div>
-        <div class="desc">Resumo dos últimos 7 dias</div>
-      </div>
-      <span class="btn-arrow">→</span>
-    </button>
-
-    <button class="btn-report" onclick="irPara('geral')">
-      
-      <div class="btn-text">
-        <div class="label">Relatório Geral</div>
-        <div class="desc">Visão completa de todos os períodos</div>
-      </div>
-      <span class="btn-arrow">→</span>
-    </button>
-
+  <!-- BOTÃO TOPO DIREITO -->
+  <div class="top-actions">
+    <form th:action="@{/logout}" method="post" class="logout-top">
+      <button type="submit">Logout</button>
+    </form>
   </div>
-</div>
 
-<script th:src="@{/JS/JsPaginaInicial.js}"></script>
+  <div class="container">
+    <div class="box">
+
+      <div class="brand-header">
+        <div class="brand-name">
+          <span class="comp">Comp</span><span class="divider">/</span><span class="steam">Steam</span>
+        </div>
+      </div>
+
+      <h2>Relatórios</h2>
+      <p class="subtitle">Selecione o tipo de relatório que deseja visualizar.</p>
+
+      <button class="btn-report" onclick="irPara('diario')">
+        <div class="btn-text">
+          <div class="label">Relatório Diário</div>
+          <div class="desc">Dados e registros do dia atual</div>
+        </div>
+        <span class="btn-arrow">→</span>
+      </button>
+
+      <button class="btn-report" onclick="irPara('semanal')">
+        <div class="btn-text">
+          <div class="label">Relatório Semanal</div>
+          <div class="desc">Resumo dos últimos 7 dias</div>
+        </div>
+        <span class="btn-arrow">→</span>
+      </button>
+
+      <button class="btn-report" onclick="irPara('geral')">
+        <div class="btn-text">
+          <div class="label">Relatório Geral</div>
+          <div class="desc">Visão completa de todos os períodos</div>
+        </div>
+        <span class="btn-arrow">→</span>
+      </button>
+
+    </div>
+  </div>
+
+  <script th:src="@{/JS/JsPaginaInicial.js}"></script>
+
 </body>
 </html>
