@@ -10,12 +10,14 @@
 
 <body>
 
+  <!-- BOTÃO TOPO -->
   <div class="nav-switch">
     <button id="btnRelatorio" onclick="alternarRelatorio()">
       Pagina inicial
     </button>
   </div>
 
+  <!-- HEADER -->
   <header class="top-bar">
 
     <!-- LOGO ESQUERDA -->
@@ -32,16 +34,22 @@
 
       <h1 class="page-title">Relatório Geral</h1>
 
-      <!-- INPUTS LADO A LADO -->
+      <!-- INPUTS -->
       <div class="filters-row">
 
         <div class="date-wrapper">
-          <label class="date-label">Selecione a Data Inicial</label>
+          <label class="date-label">
+            Selecione a Data Inicial
+          </label>
+
           <input type="date" id="dataInicio">
         </div>
 
         <div class="date-wrapper">
-          <label class="date-label">Selecione a Data Final</label>
+          <label class="date-label">
+            Selecione a Data Final
+          </label>
+
           <input type="date" id="dataFim">
         </div>
 
@@ -52,33 +60,43 @@
     <!-- DIREITA -->
     <div class="user-area">
 
+      <!-- USUÁRIO -->
+      <span class="user-name" th:text="${nomeUsuario}">
+        Usuário
+      </span>
+
+      <!-- LOGOUT -->
+      <form
+        th:action="@{/logout}"
+        method="post"
+        class="logout-top"
+      >
+        <button type="submit">
+          Logout
+        </button>
+      </form>
+
+      <!-- LOGO COMPSTEAM -->
       <img
         src="/img/comp.png"
         alt="CompSteam"
         class="logo-projeto"
       >
 
-      <span class="user-name" th:text="${nomeUsuario}">
-        Usuário
-      </span>
-
-      <form th:action="@{/logout}" method="post" class="logout-top">
-        <button type="submit">
-          Logout
-        </button>
-      </form>
-
     </div>
 
   </header>
 
+  <!-- CONTEÚDO -->
   <main class="dashboard-container">
 
     <!-- GRÁFICO -->
     <section class="card chart-card">
 
       <div class="chart-header">
-        <h2 class="section-title">Movimentação Geral</h2>
+        <h2 class="section-title">
+          Movimentação Geral
+        </h2>
       </div>
 
       <div class="chart-wrapper">
@@ -90,23 +108,40 @@
     <!-- RESUMO -->
     <section class="card info-card">
 
-      <h2 class="info-title">Resumo Geral</h2>
+      <h2 class="info-title">
+        Resumo Geral
+      </h2>
 
       <div class="stats-grid">
 
         <div class="stat-box">
-          <span class="stat-label">Entradas</span>
-          <span class="stat-value" id="totalEntradas">--</span>
+          <span class="stat-label">
+            Entradas
+          </span>
+
+          <span class="stat-value" id="totalEntradas">
+            --
+          </span>
         </div>
 
         <div class="stat-box">
-          <span class="stat-label">Saídas</span>
-          <span class="stat-value" id="totalSaidas">--</span>
+          <span class="stat-label">
+            Saídas
+          </span>
+
+          <span class="stat-value" id="totalSaidas">
+            --
+          </span>
         </div>
 
         <div class="stat-box">
-          <span class="stat-label">Dia mais movimentado</span>
-          <span class="stat-value" id="diaPico">--</span>
+          <span class="stat-label">
+            Dia mais movimentado
+          </span>
+
+          <span class="stat-value" id="diaPico">
+            --
+          </span>
         </div>
 
       </div>
@@ -115,8 +150,8 @@
 
   </main>
 
+  <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/JS/geral.js"></script>
-
+  <script th:src="@{/JS/geral.js}" src="/JS/geral.js"></script>
 </body>
 </html>
