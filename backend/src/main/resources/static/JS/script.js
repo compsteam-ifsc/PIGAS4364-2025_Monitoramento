@@ -3,13 +3,7 @@ let grafico = null;
 // ---------------- BOTÃO ----------------
 
 function alternarRelatorio() {
-    const path = window.location.pathname;
-
-    if (path.includes("/Grafico/Diario")) {
-        window.location.href = "/Grafico/Semanal";
-    } else {
-        window.location.href = "/Grafico/Diario";
-    }
+    window.location.href = "/Pagina-Inicial";
 }
 
 // ---------------- UTIL ----------------

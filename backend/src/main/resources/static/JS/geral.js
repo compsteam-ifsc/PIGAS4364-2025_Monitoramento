@@ -104,7 +104,6 @@ function agruparDados(dados, inicio, fim) {
 
         const mapaMes = {};
 
-        // soma valores existentes
         Object.keys(mapa).forEach(data => {
             const mes = data.substring(0, 7);
             mapaMes[mes] = (mapaMes[mes] || 0) + mapa[data];
@@ -179,7 +178,7 @@ async function carregarGraficoLinha(inicio, fim) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // 🔥 ESSENCIAL
+                maintainAspectRatio: false,
 
                 plugins: {
                     legend: { display: false }
@@ -254,10 +253,20 @@ window.addEventListener("load", async () => {
     const dataInicio = document.getElementById("dataInicio");
     const dataFim = document.getElementById("dataFim");
 
-    const hoje = new Date().toLocaleDateString("en-CA");
+    // hoje
+    const hojeDate = new Date();
 
-    if (dataInicio) dataInicio.value = hoje;
-    if (dataFim) dataFim.value = hoje;
+    // data final = hoje
+    const dataFimFormatada = hojeDate.toLocaleDateString("en-CA");
+
+    // data inicial = 30 dias atrás
+    const dataInicioDate = new Date(hojeDate);
+    dataInicioDate.setDate(dataInicioDate.getDate() - 30);
+
+    const dataInicioFormatada = dataInicioDate.toLocaleDateString("en-CA");
+
+    if (dataInicio) dataInicio.value = dataInicioFormatada;
+    if (dataFim) dataFim.value = dataFimFormatada;
 
     const atualizar = async () => {
 

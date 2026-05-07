@@ -16,7 +16,7 @@ function nomeDia(dateStr) {
     return dias[d.getDay()];
 }
 
-function formatarData(dateStr) {
+function formatarData(dateStr) {    
     const partes = dateStr.split("-");
     return `${partes[2]}/${partes[1]}`;
 }
