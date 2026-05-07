@@ -34,14 +34,12 @@ public class securityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    "/error",
                         "/login",
-                    
                         "/processar-login",
-                       
                         "/auth/register",
                         "/api/auth/login",
                         "/css/**",
-            
                         "/JS/**",
                         "/img/**",
                         "/images/**",
@@ -53,16 +51,27 @@ public class securityConfig {
                 .requestMatchers("/api/relatorio/**").hasRole("ADMIN")
                 .requestMatchers("/api/dashboard/**").authenticated()
 
+                // Bloqueia qualquer outra rota (existente ou 404)
                 .anyRequest().authenticated()
             )
 
-        
             .formLogin(form -> form.disable())
 
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             )
+
+            // ----------------------------------------------------
+            // A MÁGICA ACONTECE AQUI
+            // ----------------------------------------------------
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    // Se não estiver logado e tentar acessar qualquer coisa, vai pro /login
+                    response.sendRedirect("/login");
+                })
+            )
+            // ----------------------------------------------------
 
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
