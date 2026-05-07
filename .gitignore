@@ -1,4 +1,4 @@
 *.mp4
 *.pt
 *.class
-application.properties
+.env
