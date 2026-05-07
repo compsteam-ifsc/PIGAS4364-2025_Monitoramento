@@ -4,48 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório Diário</title>
-
   <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
 </head>
 
 <body>
 
   <div class="nav-switch">
- <button id="btnRelatorio" onclick="alternarRelatorio()">
-Pagina Inicial
- </button>
-    
-  
-</div>
+    <button id="btnRelatorio" onclick="alternarRelatorio()">
+      Página Inicial
+    </button>
+  </div>
 
   <header class="top-bar">
-
-    <!-- ESQUERDA -->
     <div class="top-logo">
-      <img
-        src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
-        alt="IFSC"
-        class="logo-ifsc"
-      >
+      <img src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789" alt="IFSC" class="logo-ifsc">
     </div>
 
-    <!-- CENTRO -->
     <div class="top-center">
       <h1 class="page-title">Relatório Diário</h1>
 
-      <!-- DATA -->
       <div class="date-wrapper">
         <label class="date-label">Selecione a data</label>
         <input type="date" id="dataInput">
       </div>
 
-      <!-- HORÁRIO -->
       <div class="time-wrapper">
         <label class="date-label">Intervalo de horário</label>
-
         <div class="time-range">
           <span>De</span>
-
           <select id="horaInicio" class="time-select">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
@@ -72,61 +58,29 @@ Pagina Inicial
             <option value="22">22:00</option>
             <option value="23">23:00</option>
           </select>
-
           <span>—</span>
-
           <span>Até</span>
-
           <select id="horaFim" class="time-select">
-            <option value="00">00:00</option>
-            <option value="01">01:00</option>
-            <option value="02">02:00</option>
-            <option value="03">03:00</option>
-            <option value="04">04:00</option>
-            <option value="05">05:00</option>
-            <option value="06">06:00</option>
-            <option value="07">07:00</option>
-            <option value="08">08:00</option>
-            <option value="09">09:00</option>
-            <option value="10">10:00</option>
-            <option value="11">11:00</option>
-            <option value="12">12:00</option>
-            <option value="13">13:00</option>
-            <option value="14">14:00</option>
-            <option value="15">15:00</option>
-            <option value="16">16:00</option>
-            <option value="17">17:00</option>
-            <option value="18">18:00</option>
-            <option value="19">19:00</option>
-            <option value="20">20:00</option>
-            <option value="21">21:00</option>
-            <option value="22">22:00</option>
             <option value="23" selected>23:00</option>
           </select>
         </div>
       </div>
     </div>
 
-    <!-- DIREITA -->
     <div class="user-area">
       <img src="/img/comp.png" alt="Projeto" class="logo-projeto">
-
       <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
-
       <form th:action="@{/logout}" method="post" class="logout-top">
         <button type="submit">Logout</button>
       </form>
     </div>
-
   </header>
 
   <main class="dashboard-container">
-
     <section class="card chart-card">
       <div class="chart-header">
         <h2 class="section-title">Movimentação do Dia</h2>
       </div>
-
       <div class="chart-wrapper">
         <canvas id="barChart"></canvas>
       </div>
@@ -134,9 +88,7 @@ Pagina Inicial
 
     <section class="card info-card">
       <h2 class="info-title">Resumo do Dia</h2>
-
       <div class="stats-grid">
-
         <div class="stat-box stat-box--destaque">
           <span class="stat-label">Pessoas na Biblioteca</span>
           <span class="stat-value stat-value--presentes" id="pessoasPresentes">--</span>
@@ -158,13 +110,15 @@ Pagina Inicial
           <span class="stat-value" id="ultimaSaida">--:--</span>
         </div>
 
+        <div class="stat-box">
+          <span class="stat-label">Hora de Pico</span>
+          <span class="stat-value" id="horaPico">--:--</span>
+        </div>
       </div>
     </section>
-
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script th:src="@{/JS/script.js}" src="/JS/script.js"></script>
-
 </body>
 </html>

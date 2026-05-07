@@ -18,14 +18,11 @@ public class CustomErrorController implements ErrorController {
         if (status != null) {
             Integer statusCode = Integer.valueOf(status.toString());
 
-            // Se for erro 404 (Não Encontrado)
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                // Redireciona para a sua página inicial após o login
                 return "redirect:/Pagina-Inicial"; 
             }
         }
         
-        // Se for outro erro (ex: 500), você pode mandar para uma página de erro genérica
         return "error"; 
     }
 }

@@ -62,16 +62,12 @@ public class securityConfig {
                 .permitAll()
             )
 
-            // ----------------------------------------------------
-            // A MÁGICA ACONTECE AQUI
-            // ----------------------------------------------------
+            
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {
-                    // Se não estiver logado e tentar acessar qualquer coisa, vai pro /login
                     response.sendRedirect("/login");
                 })
             )
-            // ----------------------------------------------------
 
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

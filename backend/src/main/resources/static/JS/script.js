@@ -12,30 +12,25 @@ function extrairHora(diaHorario) {
     if (Array.isArray(diaHorario)) {
         return String(diaHorario[3]).padStart(2, '0');
     }
-
     if (typeof diaHorario === 'string') {
         if (diaHorario.includes("T") || diaHorario.includes(" ")) {
             return diaHorario.substring(11, 13);
         }
     }
-
     return null;
 }
 
 function exibirHorario(valor) {
     if (!valor) return '--:--';
-
     if (typeof valor === 'string') {
         if (valor.length === 5) return valor;
         if (valor.length >= 16) return valor.substring(11, 16);
     }
-
     if (Array.isArray(valor)) {
         const h = String(valor[3]).padStart(2, '0');
         const m = String(valor[4]).padStart(2, '0');
         return h + ':' + m;
     }
-
     return '--:--';
 }
 
@@ -46,7 +41,7 @@ function getAuthHeaders() {
     return token ? { "Authorization": "Bearer " + token } : {};
 }
 
-// ---------------- GRÁFICO ----------------
+// ---------------- GRÁFICO & HORA DE PICO ----------------
 
 async function carregarGrafico(data, horaInicio, horaFim) {
     if (!data) return;
@@ -63,23 +58,35 @@ async function carregarGrafico(data, horaInicio, horaFim) {
         }
 
         const dados = await response.json();
-
         const mapaHoras = {};
+        
+        // Lógica para Hora de Pico
+        let maxEntradas = 0;
+        let horaPicoCalculada = "--:--";
 
         dados.forEach(item => {
             const hora = extrairHora(item.diaHorario);
             if (hora === null) return;
+            
             mapaHoras[hora] = (mapaHoras[hora] || 0) + 1;
+
+            // Verifica se esta hora é a mais movimentada até agora
+            if (mapaHoras[hora] > maxEntradas) {
+                maxEntradas = mapaHoras[hora];
+                horaPicoCalculada = hora + ":00";
+            }
         });
 
-        // 🔥 AQUI: força TODAS as horas
+        // Atualiza o elemento da Hora de Pico no HTML
+        const elHoraPico = document.getElementById("horaPico");
+        if (elHoraPico) elHoraPico.textContent = horaPicoCalculada;
+
+        // Construção dos dados do gráfico
         const labels = [];
         const valores = [];
 
         for (let h = 0; h <= 23; h++) {
             const horaStr = String(h).padStart(2, '0');
-
-            // respeita filtro selecionado
             if (h < parseInt(horaInicio) || h > parseInt(horaFim)) continue;
 
             labels.push(horaStr + ":00");
@@ -106,8 +113,8 @@ async function carregarGrafico(data, horaInicio, horaFim) {
                     backgroundColor: 'rgba(37, 99, 235, 0.18)',
                     borderColor: 'rgba(37, 99, 235, 0.85)',
                     borderWidth: 2,
-                    borderRadius: 10,
-                    borderSkipped: false
+                    tension: 0.3, // Deixa a linha levemente curvada
+                    fill: true
                 }]
             },
             options: {
@@ -134,7 +141,6 @@ async function carregarGrafico(data, horaInicio, horaFim) {
 // ---------------- RESUMO ----------------
 
 async function carregarResumo(data, horaInicio, horaFim) {
-
     const elEntradas  = document.getElementById("totalEntradas");
     const elPrimeira  = document.getElementById("primeiraEntrada");
     const elUltima    = document.getElementById("ultimaSaida");
@@ -150,10 +156,7 @@ async function carregarResumo(data, horaInicio, horaFim) {
             headers: getAuthHeaders()
         });
 
-        if (!response.ok) {
-            console.error("Erro HTTP:", response.status);
-            return;
-        }
+        if (!response.ok) return;
 
         const resumo = await response.json();
 
@@ -170,7 +173,6 @@ async function carregarResumo(data, horaInicio, horaFim) {
 // ---------------- INIT ----------------
 
 window.addEventListener("load", async () => {
-
     const inputData    = document.getElementById("dataInput");
     const inputHoraIni = document.getElementById("horaInicio");
     const inputHoraFim = document.getElementById("horaFim");
