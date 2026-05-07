@@ -35,13 +35,13 @@ public class securityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/login",
-                        // BUG CORRIGIDO: faltava liberar o endpoint de POST do login manual
+                    
                         "/processar-login",
-                        // BUG CORRIGIDO: faltava liberar registro de usuário
+                       
                         "/auth/register",
                         "/api/auth/login",
                         "/css/**",
-                        // BUG CORRIGIDO: pasta era "/js/**" mas os arquivos ficam em "/JS/**"
+            
                         "/JS/**",
                         "/img/**",
                         "/images/**",
@@ -56,9 +56,7 @@ public class securityConfig {
                 .anyRequest().authenticated()
             )
 
-            // BUG CORRIGIDO: o formLogin do Spring estava interceptando POST /login e
-            // conflitando com o LoginController manual. Como o login é feito manualmente
-            // pelo LoginController via /processar-login, desabilitamos o formLogin padrão.
+        
             .formLogin(form -> form.disable())
 
             .logout(logout -> logout
