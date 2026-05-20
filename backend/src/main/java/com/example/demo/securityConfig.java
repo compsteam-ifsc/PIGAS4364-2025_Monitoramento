@@ -51,7 +51,7 @@ public class securityConfig {
                 .requestMatchers("/api/relatorio/**").hasRole("ADMIN")
                 .requestMatchers("/api/dashboard/**").authenticated()
 
-                // Bloqueia qualquer outra rota (existente ou 404)
+            
                 .anyRequest().authenticated()
             )
 
