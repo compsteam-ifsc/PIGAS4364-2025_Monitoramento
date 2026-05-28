@@ -4,98 +4,101 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório Semanal</title>
-
   <link rel="stylesheet" href="/css/geral.css" th:href="@{/css/geral.css}">
 </head>
+
 <body>
+
   <div class="nav-switch">
- <button id="btnRelatorio" onclick="alternarRelatorio()">
- Pagina Inicial
- </button>
-    
- 
-</div>
-
-<header class="top-bar">
-
-  <div class="top-logo">
-    <img src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789"
-         alt="IFSC"
-         class="logo-ifsc">
+    <button id="btnRelatorio" onclick="alternarRelatorio()">
+      Página Inicial
+    </button>
   </div>
 
-  <div class="top-center">
-    <h1 class="page-title">Relatório Semanal</h1>
+  <header class="top-bar">
 
-    <div class="date-wrapper">
-      <label class="date-label">Selecione uma data</label>
-      <input type="date" id="dataInput">
+    <div class="top-logo">
+      <img src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789" alt="IFSC" class="logo-ifsc">
+      <img src="/img/comp.png" alt="CompSteam" class="logo-projeto">
     </div>
 
-    <div class="date-wrapper">
-      <span class="date-label">Semana:</span>
-      <span id="semanaLabel">--</span>
-    </div>
-  </div>
+    <div class="top-center">
+      <h1 class="page-title">Relatório Semanal</h1>
 
-  <div class="user-area">
-    <img src="/img/comp.png" class="logo-projeto">
-
-    <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
-
-    <form th:action="@{/logout}" method="post" class="logout-top">
-      <button type="submit">Logout</button>
-    </form>
-  </div>
-
-</header>
-
-<main class="dashboard-container">
-
-  <!-- GRÁFICO -->
-  <section class="card chart-card">
-    <div class="chart-header">
-      <h2 class="section-title">Movimentação da Semana</h2>
-    </div>
-
-    <div class="chart-wrapper">
-      <canvas id="lineChart"></canvas>
-    </div>
-  </section>
-
-  <!-- RESUMO -->
-  <section class="card info-card">
-    <h2 class="info-title">Resumo da Semana</h2>
-
-    <div class="stats-grid">
-
-      <div class="stat-box">
-        <span class="stat-label">Entradas</span>
-        <span class="stat-value" id="totalEntradas">--</span>
+      <div class="date-wrapper">
+        <label class="date-label">Selecione uma data</label>
+        <input type="date" id="dataInput">
       </div>
 
-      <div class="stat-box">
-        <span class="stat-label">Saídas</span>
-        <span class="stat-value" id="totalSaidas">--</span>
+      <div class="date-wrapper">
+        <span class="date-label">Semana:</span>
+        <span id="semanaLabel">--</span>
       </div>
-
-      <div class="stat-box">
-        <span class="stat-label">Dia mais movimentado</span>
-        <span class="stat-value" id="diaPico">--</span>
-      </div>
-
-      <div class="stat-box">
-        <span class="stat-label">Média por dia</span>
-        <span class="stat-value" id="mediaEntradas">--</span>
-      </div>
-
     </div>
-  </section>
 
-</main>
+    <div class="user-area">
+      <div class="user-avatar" id="userAvatar">--</div>
+      <div class="user-info">
+        <span class="user-role">Operador</span>
+        <span class="user-name" id="userName" th:text="${nomeUsuario}">Usuário</span>
+      </div>
+      <form th:action="@{/logout}" method="post" class="logout-top">
+        <button type="submit">Sair</button>
+      </form>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script th:src="@{/JS/semanal.js}" src="/JS/semanal.js"></script>
+  </header>
 
+  <main class="dashboard-container">
+
+    <section class="card chart-card">
+      <div class="chart-header">
+        <h2 class="section-title">Movimentação da Semana</h2>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card info-card">
+      <h2 class="info-title">Resumo da Semana</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">Entradas</span>
+          <span class="stat-value" id="totalEntradas">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Saídas</span>
+          <span class="stat-value" id="totalSaidas">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Dia mais movimentado</span>
+          <span class="stat-value" id="diaPico">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Média por dia</span>
+          <span class="stat-value" id="mediaEntradas">--</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script th:src="@{/JS/semanal.js}" src="/JS/semanal.js"></script>
+  <script>
+    (function() {
+      const nameEl = document.getElementById('userName');
+      const avatarEl = document.getElementById('userAvatar');
+      if (nameEl && avatarEl) {
+        const name = nameEl.textContent.trim();
+        const parts = name.split(' ').filter(Boolean);
+        let initials = parts.length >= 2
+          ? parts[0][0] + parts[parts.length - 1][0]
+          : name.slice(0, 2);
+        avatarEl.textContent = initials.toUpperCase();
+      }
+    })();
+  </script>
 </body>
 </html>

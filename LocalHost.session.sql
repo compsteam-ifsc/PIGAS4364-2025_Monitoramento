@@ -1,1 +1,2 @@
-SELECT * FROM horario;
+USe monitoramento;
+DELETE FROM horario;

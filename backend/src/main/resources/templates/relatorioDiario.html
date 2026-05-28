@@ -16,8 +16,10 @@
   </div>
 
   <header class="top-bar">
+
     <div class="top-logo">
       <img src="https://www.ifsc.edu.br/image/layout_set_logo?img_id=48632&t=1774934283789" alt="IFSC" class="logo-ifsc">
+      <img src="/img/comp.png" alt="CompSteam" class="logo-projeto">
     </div>
 
     <div class="top-center">
@@ -68,15 +70,20 @@
     </div>
 
     <div class="user-area">
-      <img src="/img/comp.png" alt="Projeto" class="logo-projeto">
-      <span class="user-name" th:text="${nomeUsuario}">Usuário</span>
+      <div class="user-avatar" id="userAvatar">--</div>
+      <div class="user-info">
+        <span class="user-role">Operador</span>
+        <span class="user-name" id="userName" th:text="${nomeUsuario}">Usuário</span>
+      </div>
       <form th:action="@{/logout}" method="post" class="logout-top">
-        <button type="submit">Logout</button>
+        <button type="submit">Sair</button>
       </form>
     </div>
+
   </header>
 
   <main class="dashboard-container">
+
     <section class="card chart-card">
       <div class="chart-header">
         <h2 class="section-title">Movimentação do Dia</h2>
@@ -89,36 +96,47 @@
     <section class="card info-card">
       <h2 class="info-title">Resumo do Dia</h2>
       <div class="stats-grid">
-        <div class="stat-box stat-box--destaque">
+        <div class="stat-box">
           <span class="stat-label">Pessoas na Biblioteca</span>
-          <span class="stat-value stat-value--presentes" id="pessoasPresentes">--</span>
-          <span class="stat-badge">agora</span>
+          <span class="stat-value" id="pessoasPresentes">--</span>
         </div>
-
         <div class="stat-box">
           <span class="stat-label">Entradas</span>
           <span class="stat-value" id="totalEntradas">--</span>
         </div>
-
         <div class="stat-box">
           <span class="stat-label">Primeira Entrada</span>
           <span class="stat-value" id="primeiraEntrada">--:--</span>
         </div>
-
         <div class="stat-box">
           <span class="stat-label">Última Saída</span>
           <span class="stat-value" id="ultimaSaida">--:--</span>
         </div>
-
         <div class="stat-box">
           <span class="stat-label">Hora de Pico</span>
           <span class="stat-value" id="horaPico">--:--</span>
         </div>
       </div>
     </section>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script th:src="@{/JS/script.js}" src="/JS/script.js"></script>
+  <script>
+    // Gera as iniciais do nome do usuário no avatar
+    (function() {
+      const nameEl = document.getElementById('userName');
+      const avatarEl = document.getElementById('userAvatar');
+      if (nameEl && avatarEl) {
+        const name = nameEl.textContent.trim();
+        const parts = name.split(' ').filter(Boolean);
+        let initials = parts.length >= 2
+          ? parts[0][0] + parts[parts.length - 1][0]
+          : name.slice(0, 2);
+        avatarEl.textContent = initials.toUpperCase();
+      }
+    })();
+  </script>
 </body>
 </html>

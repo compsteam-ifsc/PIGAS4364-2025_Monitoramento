@@ -6,7 +6,7 @@ from ultralytics import YOLO
 # ==================== CONFIG ====================
 model = YOLO('yolov8n.pt')
 
-pasta_videos = r"C:\Users\matheus-lopes\Desktop\saindo"
+pasta_videos = r"C:\Users\matheus-lopes\Desktop\clips_4"
 extensoes    = ('.mp4', '.avi', '.mkv', '.mov')
 
 BASE_URL      = "http://localhost:8080"
