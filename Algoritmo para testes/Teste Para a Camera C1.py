@@ -3,6 +3,7 @@
 
 import os
 import cv2
+import re
 from ultralytics import YOLO
 
 # ==========================================
@@ -62,6 +63,14 @@ for pasta_videos in pastas_videos:
         ,
         f"log_{nome_pasta}.txt"
     )
+
+    arquivo_resumo = os.path.join(
+        pasta_logs,
+        f"resumo_{nome_pasta}.txt"
+    )
+
+    # Dicionário temporário para acumular os dados consolidados do resumo da pasta atual
+    dados_resumo_pasta = {}
 
     # Cria o TXT se não existir
     if not os.path.exists(arquivo_saida):
@@ -270,6 +279,25 @@ for pasta_videos in pastas_videos:
             relatorio.write(linha)
 
             print(f"\n{linha.strip()}")
+
+            # Lógica Adicional: Extrai o prefixo removendo o sufixo do clipe para o relatório resumido
+            # Exemplo: "tapo_2026-04-29_17-05-29_clipe___0000001.mp4" vira "tapo_2026-04-29_17-05-29"
+            prefixo_video = re.sub(r'_clipe___\d+', '', os.path.splitext(arquivo)[0])
+            
+            if prefixo_video not in dados_resumo_pasta:
+                dados_resumo_pasta[prefixo_video] = {"entradas": 0, "saidas": 0}
+                
+            dados_resumo_pasta[prefixo_video]["entradas"] += entradas
+            dados_resumo_pasta[prefixo_video]["saidas"] += saidas
+
+    # Salva o arquivo de resumo consolidado da pasta caso dados tenham sido coletados
+    if dados_resumo_pasta:
+        with open(arquivo_resumo, "w", encoding="utf-8") as resumo_file:
+            resumo_file.write(f"RESUMO CONSOLIDADO DA PASTA {nome_pasta}\n\n")
+            for prefixo, totais in dados_resumo_pasta.items():
+                resumo_file.write(
+                    f"{prefixo}: Entradas={totais['entradas']} | Saidas={totais['saidas']}\n"
+                )
 
 # ==========================================
 # FINALIZAÇÃO
