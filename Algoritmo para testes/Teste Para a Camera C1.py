@@ -1,3 +1,6 @@
+# Teste Para a Camera C1 Sem  Mandar para o Servidor, Apenas para Conferir a Contagem Localmente
+# Baseado no testeC1.py, mas sem enviar os dados para o servidor e com logs locais para conferência
+
 import os
 import cv2
 from ultralytics import YOLO
