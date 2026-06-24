@@ -1,5 +1,5 @@
-# Teste Para a Camera C1 Sem  Mandar para o Servidor, Apenas para Conferir a Contagem Localmente
-# Baseado no testeC1.py, mas sem enviar os dados para o servidor e com logs locais para conferência
+# Teste Para a Camera C2 Sem  Mandar para o Servidor, Apenas para Conferir a Contagem Localmente
+# Baseado no testeC2.py, mas sem enviar os dados para o servidor e com logs locais para conferência
 
 import os
 import cv2
@@ -13,14 +13,17 @@ from ultralytics import YOLO
 model = YOLO("yolo11s.pt")
 
 # ==========================================
+# INVERSÃO DE SENTIDO
+# ==========================================
+
+INVERTER = True
+
+# ==========================================
 # PASTAS DOS VÍDEOS
 # ==========================================
 
 pastas_videos = [
-    r"C:\Users\eduardo-heck\Desktop\Gravacao - 2904 - 0705\C2\clips_1",
-    r"C:\Users\eduardo-heck\Desktop\Gravacao - 2904 - 0705\C2\clips_2",
-    r"C:\Users\eduardo-heck\Desktop\Gravacao - 2904 - 0705\C2\clips_3",
-    r"C:\Users\eduardo-heck\Desktop\Gravacao - 2904 - 0705\C2\clips_4"
+    r"C:\Users\matheus-lopes\Desktop\clps"
 ]
 
 extensoes = (
@@ -59,8 +62,7 @@ for pasta_videos in pastas_videos:
     nome_pasta = os.path.basename(pasta_videos)
 
     arquivo_saida = os.path.join(
-        pasta_logs
-        ,
+        pasta_logs,
         f"log_{nome_pasta}.txt"
     )
 
@@ -69,7 +71,6 @@ for pasta_videos in pastas_videos:
         f"resumo_{nome_pasta}.txt"
     )
 
-    # Dicionário temporário para acumular os dados consolidados do resumo da pasta atual
     dados_resumo_pasta = {}
 
     # Cria o TXT se não existir
@@ -113,9 +114,8 @@ for pasta_videos in pastas_videos:
 
                 frame_count += 1
 
-                # Processa metade dos frames
-                if frame_count % 2 != 0:
-                    continue
+            
+                
 
                 altura, largura, _ = frame.shape
 
@@ -176,29 +176,29 @@ for pasta_videos in pastas_videos:
                                 historico_posicoes[track_id]
                             )
 
-                            # Entrada (invertida)
-                            if (
-                                estado_anterior == "dentro"
-                                and estado_atual == "fora"
-                            ):
+                            # ==========================================
+                            # LÓGICA DE CRUZAMENTO COM INVERSÃO
+                            # ==========================================
 
-                                entradas += 1
-
-                                print(
-                                    f">>> [ID {track_id}] Entrada"
-                                )
-
-                            # Saída (invertida)
-                            elif (
+                            entrou = (
                                 estado_anterior == "fora"
                                 and estado_atual == "dentro"
-                            ):
+                            )
+                            saiu = (
+                                estado_anterior == "dentro"
+                                and estado_atual == "fora"
+                            )
 
+                            if INVERTER:
+                                entrou, saiu = saiu, entrou
+
+                            if entrou:
+                                entradas += 1
+                                print(f">>> [ID {track_id}] Entrada")
+
+                            elif saiu:
                                 saidas += 1
-
-                                print(
-                                    f">>> [ID {track_id}] Saída"
-                                )
+                                print(f">>> [ID {track_id}] Saída")
 
                         historico_posicoes[track_id] = estado_atual
 
@@ -283,10 +283,10 @@ for pasta_videos in pastas_videos:
             # Lógica Adicional: Extrai o prefixo removendo o sufixo do clipe para o relatório resumido
             # Exemplo: "tapo_2026-04-29_17-05-29_clipe___0000001.mp4" vira "tapo_2026-04-29_17-05-29"
             prefixo_video = re.sub(r'_clipe___\d+', '', os.path.splitext(arquivo)[0])
-            
+
             if prefixo_video not in dados_resumo_pasta:
                 dados_resumo_pasta[prefixo_video] = {"entradas": 0, "saidas": 0}
-                
+
             dados_resumo_pasta[prefixo_video]["entradas"] += entradas
             dados_resumo_pasta[prefixo_video]["saidas"] += saidas
 
