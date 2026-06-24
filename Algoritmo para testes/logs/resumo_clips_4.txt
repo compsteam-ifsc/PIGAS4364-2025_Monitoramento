@@ -1,0 +1,14 @@
+RESUMO CONSOLIDADO DA PASTA clips_4
+
+tapo_2026-04-30_09-00-00: Entradas=8 | Saidas=8
+tapo_2026-05-04_06-00-02: Entradas=1 | Saidas=4
+tapo_2026-05-04_08-00-00: Entradas=0 | Saidas=0
+tapo_2026-05-04_12-00-01: Entradas=2 | Saidas=6
+tapo_2026-05-04_14-00-00: Entradas=1 | Saidas=0
+tapo_2026-05-04_15-00-00: Entradas=4 | Saidas=5
+tapo_2026-05-04_18-00-01: Entradas=1 | Saidas=0
+tapo_2026-05-04_19-00-00: Entradas=0 | Saidas=1
+tapo_2026-05-04_20-00-00: Entradas=0 | Saidas=0
+tapo_2026-05-05_09-00-00: Entradas=0 | Saidas=0
+tapo_2026-05-05_10-00-00: Entradas=2 | Saidas=3
+tapo_2026-05-05_11-00-00: Entradas=1 | Saidas=0
