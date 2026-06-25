@@ -113,9 +113,7 @@ for pasta_videos in pastas_videos:
 
                 frame_count += 1
 
-                # Processa metade dos frames
-                if frame_count % 2 != 0:
-                    continue
+               
 
                 altura, largura, _ = frame.shape
 
