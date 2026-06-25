@@ -1,4 +1,4 @@
 RESUMO CONSOLIDADO DA PASTA clps
 
-tapo_2026-04-29_17-06-00: Entradas=5 | Saidas=7
-tapo_2026-04-29_18-00-01: Entradas=3 | Saidas=1
+tapo_2026-04-29_17-06-00: Entradas=7 | Saidas=5
+tapo_2026-04-29_18-00-01: Entradas=1 | Saidas=3

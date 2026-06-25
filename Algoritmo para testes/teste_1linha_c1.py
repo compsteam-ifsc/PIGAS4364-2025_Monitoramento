@@ -14,7 +14,7 @@ model = YOLO("yolo11s.pt")
 # ==========================================
 
 pastas_videos = [
-    r"C:\Users\eduardo-heck\Desktop\videos"
+    r"C:\Users\matheus-lopes\Desktop\clps"
 ]
 
 extensoes = (
@@ -39,6 +39,19 @@ pasta_logs = os.path.join(
 os.makedirs(pasta_logs, exist_ok=True)
 
 # ==========================================
+# GABARITO (caminho fixo)
+# ==========================================
+
+arquivo_manual = os.path.join(
+    pasta_script,
+    "manual.txt"
+)
+
+# Cria o arquivo manual vazio se não existir
+if not os.path.exists(arquivo_manual):
+    open(arquivo_manual, "w", encoding="utf-8").close()
+
+# ==========================================
 # PROCESSAMENTO
 # ==========================================
 
@@ -53,8 +66,7 @@ for pasta_videos in pastas_videos:
     nome_pasta = os.path.basename(pasta_videos)
 
     arquivo_saida = os.path.join(
-        pasta_logs
-        ,
+        pasta_logs,
         f"log_{nome_pasta}.txt"
     )
 
@@ -68,7 +80,6 @@ for pasta_videos in pastas_videos:
 
     # Cria o TXT se não existir
     if not os.path.exists(arquivo_saida):
-
         with open(arquivo_saida, "w", encoding="utf-8") as f:
             f.write(
                 f"RELATORIO DA PASTA {nome_pasta}\n\n"
@@ -106,9 +117,6 @@ for pasta_videos in pastas_videos:
                     break
 
                 frame_count += 1
-
-                # Processa metade dos frames
-                
 
                 altura, largura, _ = frame.shape
 
@@ -273,13 +281,12 @@ for pasta_videos in pastas_videos:
 
             print(f"\n{linha.strip()}")
 
-            # Lógica Adicional: Extrai o prefixo removendo o sufixo do clipe para o relatório resumido
-            # Exemplo: "tapo_2026-04-29_17-05-29_clipe___0000001.mp4" vira "tapo_2026-04-29_17-05-29"
+            # Extrai o prefixo removendo o sufixo do clipe para o relatório resumido
             prefixo_video = re.sub(r'_clipe___\d+', '', os.path.splitext(arquivo)[0])
-            
+
             if prefixo_video not in dados_resumo_pasta:
                 dados_resumo_pasta[prefixo_video] = {"entradas": 0, "saidas": 0}
-                
+
             dados_resumo_pasta[prefixo_video]["entradas"] += entradas
             dados_resumo_pasta[prefixo_video]["saidas"] += saidas
 
@@ -299,3 +306,222 @@ for pasta_videos in pastas_videos:
 cv2.destroyAllWindows()
 
 print("\nProcessamento finalizado.")
+
+
+# ==========================================
+# VALIDAÇÃO AUTOMÁTICA
+# ==========================================
+
+def _parse_manual(caminho_manual):
+    """
+    Lê o gabarito manual e retorna:
+        { nome_normalizado: {"entradas": int, "saidas": int} }
+
+    Formatos aceitos por linha:
+        nome:Entradas:N Saidas:M
+        nome:Entradas:N
+        nome:Saidas:M
+        nome:              → 0 / 0
+        nome               → 0 / 0
+    Linhas vazias e comentários (#) são ignorados.
+    """
+    dados = {}
+
+    with open(caminho_manual, "r", encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+
+            if not linha or linha.startswith("#"):
+                continue
+
+            partes = linha.split(":", 1)
+            nome   = os.path.splitext(partes[0].strip())[0]
+
+            if not nome:
+                continue
+
+            entradas = 0
+            saidas   = 0
+
+            if len(partes) > 1:
+                resto   = partes[1]
+                match_e = re.search(r'Entradas\s*:\s*(\d+)', resto, re.IGNORECASE)
+                match_s = re.search(r'Saidas\s*:\s*(\d+)',   resto, re.IGNORECASE)
+
+                if match_e:
+                    entradas = int(match_e.group(1))
+                if match_s:
+                    saidas = int(match_s.group(1))
+
+            dados[nome] = {"entradas": entradas, "saidas": saidas}
+
+    return dados
+
+
+def _parse_log(caminho_log):
+    """
+    Lê o log gerado pelo script e retorna:
+        { nome_normalizado: {"entradas": int, "saidas": int} }
+
+    Formato esperado:
+        nome_video.mp4: Entradas=N | Saidas=M
+    Linhas que não casem com o padrão são ignoradas.
+    """
+    dados  = {}
+    padrao = re.compile(
+        r'^(?P<nome>.+?)\s*:\s*Entradas=(?P<e>\d+)\s*\|\s*Saidas=(?P<s>\d+)',
+        re.IGNORECASE
+    )
+
+    with open(caminho_log, "r", encoding="utf-8") as f:
+        for linha in f:
+            m = padrao.match(linha.strip())
+
+            if not m:
+                continue
+
+            nome     = os.path.splitext(m.group("nome").strip())[0]
+            entradas = int(m.group("e"))
+            saidas   = int(m.group("s"))
+
+            dados[nome] = {"entradas": entradas, "saidas": saidas}
+
+    return dados
+
+
+def _log_mais_recente(pasta_logs):
+    """Retorna o log_*.txt modificado mais recentemente, ou None."""
+    candidatos = [
+        os.path.join(pasta_logs, f)
+        for f in os.listdir(pasta_logs)
+        if f.startswith("log_") and f.endswith(".txt")
+    ]
+
+    return max(candidatos, key=os.path.getmtime) if candidatos else None
+
+
+def validar_contagem(arquivo_manual, pasta_logs):
+    """
+    Compara o gabarito manual com o log mais recente e grava comparacao.txt.
+
+    Vídeos presentes em apenas um dos lados são registrados como ERRO
+    com valores zerados no lado faltante.
+    """
+    SEPARADOR = "=" * 50
+
+    # --- gabarito ausente: avisa e encerra sem criar arquivo ---
+    if not os.path.exists(arquivo_manual):
+        print(
+            f"\n[VALIDAÇÃO] Arquivo manual não encontrado: {arquivo_manual}\n"
+            "            Encerrando sem gerar comparação."
+        )
+        return
+
+    # --- log ausente ---
+    caminho_log = _log_mais_recente(pasta_logs)
+
+    if caminho_log is None:
+        print(
+            f"\n[VALIDAÇÃO] Nenhum log_*.txt encontrado em {pasta_logs}.\n"
+            "            Encerrando sem gerar comparação."
+        )
+        return
+
+    print(f"\n[VALIDAÇÃO] Usando log: {os.path.basename(caminho_log)}")
+
+    manual = _parse_manual(arquivo_manual)
+    script = _parse_log(caminho_log)
+
+    todos = sorted(set(manual.keys()) | set(script.keys()))
+
+    # --- contadores ---
+    total_comparados = 0
+    total_ok         = 0
+    total_erro       = 0
+    soma_e_manual    = 0
+    soma_s_manual    = 0
+    soma_e_script    = 0
+    soma_s_script    = 0
+
+    blocos = []
+
+    for video in todos:
+        total_comparados += 1
+
+        e_m = manual[video]["entradas"] if video in manual else 0
+        s_m = manual[video]["saidas"]   if video in manual else 0
+        e_s = script[video]["entradas"] if video in script else 0
+        s_s = script[video]["saidas"]   if video in script else 0
+
+        soma_e_manual += e_m
+        soma_s_manual += s_m
+        soma_e_script += e_s
+        soma_s_script += s_s
+
+        diff_e = e_s - e_m
+        diff_s = s_s - s_m
+
+        status = "OK" if (diff_e == 0 and diff_s == 0) else "ERRO"
+
+        ausencia = ""
+        if video not in manual:
+            ausencia = "  [AUSENTE NO MANUAL — valores zerados]\n"
+        elif video not in script:
+            ausencia = "  [AUSENTE NO SCRIPT — valores zerados]\n"
+
+        if status == "OK" and not ausencia:
+            total_ok += 1
+            blocos.append(
+                f"{SEPARADOR}\n"
+                f"VIDEO: {video}\n"
+                f"STATUS: OK\n"
+            )
+        else:
+            total_erro += 1
+            blocos.append(
+                f"{SEPARADOR}\n"
+                f"VIDEO: {video}\n"
+                f"{ausencia}"
+                f"MANUAL    Entradas: {e_m}  Saidas: {s_m}\n"
+                f"SCRIPT    Entradas: {e_s}  Saidas: {s_s}\n"
+                f"DIFERENCA Entradas: {diff_e:+d}  Saidas: {diff_s:+d}\n"
+                f"STATUS: ERRO\n"
+            )
+
+    diff_total_e = soma_e_script - soma_e_manual
+    diff_total_s = soma_s_script - soma_s_manual
+
+    arquivo_comparacao = os.path.join(pasta_logs, "comparacao.txt")
+
+    with open(arquivo_comparacao, "w", encoding="utf-8") as f:
+
+        f.write("COMPARACAO MANUAL x SCRIPT\n\n")
+
+        for bloco in blocos:
+            f.write(bloco + "\n")
+
+        f.write(f"{SEPARADOR}\n")
+        f.write("RESUMO\n\n")
+        f.write(f"Videos comparados      : {total_comparados}\n")
+        f.write(f"Acertos (OK)           : {total_ok}\n")
+        f.write(f"Erros                  : {total_erro}\n")
+        f.write("\n")
+        f.write(f"Total entradas  MANUAL : {soma_e_manual}\n")
+        f.write(f"Total entradas  SCRIPT : {soma_e_script}\n")
+        f.write(f"Diferenca entradas     : {diff_total_e:+d}\n")
+        f.write("\n")
+        f.write(f"Total saidas    MANUAL : {soma_s_manual}\n")
+        f.write(f"Total saidas    SCRIPT : {soma_s_script}\n")
+        f.write(f"Diferenca saidas       : {diff_total_s:+d}\n")
+        f.write(f"{SEPARADOR}\n")
+
+    print(
+        f"[VALIDAÇÃO] comparacao.txt gerado em: {arquivo_comparacao}\n"
+        f"            Comparados={total_comparados} | "
+        f"OK={total_ok} | "
+        f"ERRO={total_erro}"
+    )
+
+
+# Executa a validação ao final do script
+validar_contagem(arquivo_manual, pasta_logs)

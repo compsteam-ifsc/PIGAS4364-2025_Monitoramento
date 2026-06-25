@@ -1,0 +1,137 @@
+COMPARACAO MANUAL x SCRIPT
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000001
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 0
+DIFERENCA Entradas: +1  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000003
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 0
+DIFERENCA Entradas: +1  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000004
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 0
+DIFERENCA Entradas: +0  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000006
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 1
+DIFERENCA Entradas: +0  Saidas: +1
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000007
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 1
+DIFERENCA Entradas: +1  Saidas: +1
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000008
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 0
+DIFERENCA Entradas: +1  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000009
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 1
+DIFERENCA Entradas: +0  Saidas: +1
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000011
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 1
+DIFERENCA Entradas: +0  Saidas: +1
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000012
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 0
+DIFERENCA Entradas: +1  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000019
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 2  Saidas: 0
+DIFERENCA Entradas: +2  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_17-06-00_clipe___0000021
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 1
+DIFERENCA Entradas: +0  Saidas: +1
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_18-00-01_clipe___0000002
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 1  Saidas: 0
+DIFERENCA Entradas: +1  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_18-00-01_clipe___0000003
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 0
+DIFERENCA Entradas: +0  Saidas: +0
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_18-00-01_clipe___0000005
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 2
+DIFERENCA Entradas: +0  Saidas: +2
+STATUS: ERRO
+
+==================================================
+VIDEO: tapo_2026-04-29_18-00-01_clipe___0000007
+  [AUSENTE NO MANUAL — valores zerados]
+MANUAL    Entradas: 0  Saidas: 0
+SCRIPT    Entradas: 0  Saidas: 1
+DIFERENCA Entradas: +0  Saidas: +1
+STATUS: ERRO
+
+==================================================
+RESUMO
+
+Videos comparados      : 15
+Acertos (OK)           : 0
+Erros                  : 15
+
+Total entradas  MANUAL : 0
+Total entradas  SCRIPT : 8
+Diferenca entradas     : +8
+
+Total saidas    MANUAL : 0
+Total saidas    SCRIPT : 8
+Diferenca saidas       : +8
+==================================================
