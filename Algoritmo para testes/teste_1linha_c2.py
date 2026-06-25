@@ -1,6 +1,3 @@
-# Teste Para a Camera C1 Sem  Mandar para o Servidor, Apenas para Conferir a Contagem Localmente
-# Baseado no testeC1.py, mas sem enviar os dados para o servidor e com logs locais para conferência
-
 import os
 import cv2
 import re
@@ -13,14 +10,17 @@ from ultralytics import YOLO
 model = YOLO("yolo11s.pt")
 
 # ==========================================
+# INVERSÃO DE SENTIDO
+# ==========================================
+
+INVERTER = True
+
+# ==========================================
 # PASTAS DOS VÍDEOS
 # ==========================================
 
 pastas_videos = [
-    r"C:\Users\matheus-lopes\Desktop\clips_1",
-    r"C:\Users\matheus-lopes\Desktop\clips_2",
-    r"C:\Users\matheus-lopes\Desktop\clips_3",
-    r"C:\Users\matheus-lopes\Desktop\clips_4"
+    r"C:\Users\eduardo-heck\Desktop\videos"
 ]
 
 extensoes = (
@@ -113,7 +113,8 @@ for pasta_videos in pastas_videos:
 
                 frame_count += 1
 
-               
+                # Processa metade dos frames
+                
 
                 altura, largura, _ = frame.shape
 
@@ -174,11 +175,21 @@ for pasta_videos in pastas_videos:
                                 historico_posicoes[track_id]
                             )
 
-                            # Entrada
-                            if (
+                            entrou = (
                                 estado_anterior == "fora"
                                 and estado_atual == "dentro"
-                            ):
+                            )
+
+                            saiu = (
+                                estado_anterior == "dentro"
+                                and estado_atual == "fora"
+                            )
+
+                            if INVERTER:
+                                entrou, saiu = saiu, entrou
+
+                            # Entrada
+                            if entrou:
 
                                 entradas += 1
 
@@ -187,10 +198,7 @@ for pasta_videos in pastas_videos:
                                 )
 
                             # Saída
-                            elif (
-                                estado_anterior == "dentro"
-                                and estado_atual == "fora"
-                            ):
+                            elif saiu:
 
                                 saidas += 1
 
