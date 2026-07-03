@@ -1,4 +1,7 @@
-# Teste Para a Camera Superior (Top-Down)
+
+
+
+# Teste Para a Camera C1 Sem Mandar para o Servidor, Apenas para Conferir a Contagem Localmente
 
 import os
 import cv2
@@ -7,7 +10,7 @@ from ultralytics import YOLO
 from datetime import datetime
 
 # ==========================================
-# FUNÇÃO AUXILIAR PARA LINHAS
+# FUNÇÃO AUXILIAR PARA LINHAS INCLINADAS
 # ==========================================
 def calcular_posicao_linha(cx, cy, pt1, pt2):
     x1, y1 = pt1
@@ -18,6 +21,11 @@ def calcular_posicao_linha(cx, cy, pt1, pt2):
 # MODELO E PASTAS
 # ==========================================
 model = YOLO("yolo11s.pt")
+
+# ==========================================
+# INVERSÃO DE SENTIDO
+# ==========================================
+INVERTER = True
 
 pastas_videos = [
     r"C:\Users\eduardo-heck\Desktop\videos"
@@ -47,10 +55,11 @@ for pasta_videos in pastas_videos:
 
     dados_resumo_pasta = {}
 
+    # LOG INICIAL
     with open(arquivo_saida, "a", encoding="utf-8") as relatorio:
-        relatorio.write("\n" + "=" * 60 + "\n")
+        relatorio.write("\n" + "="*60 + "\n")
         relatorio.write(f"INICIO PROCESSAMENTO - {datetime.now()}\n")
-        relatorio.write("=" * 60 + "\n\n")
+        relatorio.write("="*60 + "\n\n")
 
     for arquivo in os.listdir(pasta_videos):
 
@@ -72,25 +81,23 @@ for pasta_videos in pastas_videos:
         historico_posicoes = {}
         entradas = 0
         saidas = 0
+        frame_count = 0
 
         while True:
 
             ret, frame = cap.read()
-
             if not ret:
                 break
 
+            frame_count += 1
+
             altura, largura, _ = frame.shape
 
-            # ======================================
-            # LINHAS PARA CAMERA DE CIMA
-            # ======================================
+            L1_PT1 = (int(largura * 0.03), int(altura * 0.50))
+            L1_PT2 = (int(largura * 0.99), int(altura * 0.80))
 
-            L1_PT1 = (int(largura * 0.20), int(altura * 0.70))
-            L1_PT2 = (int(largura * 0.80), int(altura * 0.70))
-
-            L2_PT1 = (int(largura * 0.20), int(altura * 0.40))
-            L2_PT2 = (int(largura * 0.80), int(altura * 0.40))
+            L2_PT1 = (int(largura * 0.10), int(altura * 0.28))
+            L2_PT2 = (int(largura * 0.67), int(altura * 0.36))
 
             results = model.track(
                 frame,
@@ -110,37 +117,27 @@ for pasta_videos in pastas_videos:
                 for box, track_id in zip(boxes, ids):
 
                     x1, y1, x2, y2 = map(int, box)
-
                     cx = (x1 + x2) // 2
                     cy = (y1 + y2) // 2
 
                     passou_L1 = calcular_posicao_linha(cx, cy, L1_PT1, L1_PT2) < 0
                     passou_L2 = calcular_posicao_linha(cx, cy, L2_PT1, L2_PT2) < 0
 
-                    if passou_L1 and passou_L2:
+                    if not passou_L1 and not passou_L2:
                         estado_atual = "dentro"
-
                     elif passou_L1 and not passou_L2:
                         estado_atual = "meio"
-
-                    elif not passou_L1 and not passou_L2:
+                    elif passou_L1 and passou_L2:
                         estado_atual = "fora"
-
                     else:
                         estado_atual = "invalido"
 
                     if track_id not in historico_posicoes:
-
                         historico_posicoes[track_id] = [estado_atual]
-
                     else:
-
                         ultimo_estado = historico_posicoes[track_id][-1]
 
-                        if (
-                            estado_atual != ultimo_estado
-                            and estado_atual != "invalido"
-                        ):
+                        if estado_atual != ultimo_estado and estado_atual != "invalido":
 
                             historico_posicoes[track_id].append(estado_atual)
 
@@ -149,65 +146,64 @@ for pasta_videos in pastas_videos:
 
                             seq = historico_posicoes[track_id]
 
-                            # ==========================
-                            # LÓGICA INVERTIDA
-                            # ==========================
+                            entrou = seq == ["fora", "meio", "dentro"]
+                            saiu = seq == ["dentro", "meio", "fora"]
 
-                            if seq == ["dentro", "meio", "fora"]:
-                                saidas += 1
-                                print(f">>> SAIDA ID {track_id}")
+                            if INVERTER:
+                                entrou, saiu = saiu, entrou
 
-                            elif seq == ["fora", "meio", "dentro"]:
+                            if entrou:
                                 entradas += 1
                                 print(f">>> ENTRADA ID {track_id}")
 
+                            elif saiu:
+                                saidas += 1
+                                print(f">>> SAÍDA ID {track_id}")
+
+                    # VISUALIZAÇÃO
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
                     cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
+                    cv2.putText(frame, f"ID {track_id}", (x1, y1 - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-                    cv2.putText(
-                        frame,
-                        f"ID {track_id}",
-                        (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        2
-                    )
-
+            # LINHAS
             cv2.line(frame, L1_PT1, L1_PT2, (255, 0, 0), 2)
             cv2.line(frame, L2_PT1, L2_PT2, (0, 255, 255), 2)
 
-            cv2.putText(
-                frame,
-                f"Entradas: {entradas} | Saidas: {saidas}",
-                (20, 40),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                (0, 0, 255),
-                2
-            )
+            cv2.putText(frame,
+                        f"Entradas: {entradas} | Saidas: {saidas}",
+                        (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        (0, 0, 255),
+                        2)
 
+            # MOSTRAR VÍDEO
             cv2.imshow("Contagem", frame)
 
             key = cv2.waitKey(1) & 0xFF
-
             if key == ord("q"):
                 break
 
         cap.release()
 
-        linha = (
-            f"{arquivo}: "
-            f"Entradas={entradas} | "
-            f"Saidas={saidas}"
-        )
-
+        # LOG FINAL
+        linha = f"{arquivo}: Entradas={entradas} | Saidas={saidas}"
         print(linha)
 
         with open(arquivo_saida, "a", encoding="utf-8") as relatorio:
             relatorio.write(f"{linha}\n")
 
-cv2.destroyAllWindows()
+        prefixo_video = re.sub(r'_clipe___\d+', '', os.path.splitext(arquivo)[0])
 
+        if prefixo_video not in dados_resumo_pasta:
+            dados_resumo_pasta[prefixo_video] = {"entradas": 0, "saidas": 0}
+
+        dados_resumo_pasta[prefixo_video]["entradas"] += entradas
+        dados_resumo_pasta[prefixo_video]["saidas"] += saidas
+
+# ==========================================
+# FINALIZAÇÃO
+# ==========================================
+cv2.destroyAllWindows()
 print("\nProcessamento finalizado.")
