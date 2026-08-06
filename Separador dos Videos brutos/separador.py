@@ -5,7 +5,7 @@ import logging
 from ultralytics import YOLO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# ==================== CONFIGURAÇÕES ====================
+
 PASTA_BASE = r"C:\Users\matheus-lopes\Desktop\Gravacao 2904 - 0705\C1"
 FPS_SAIDA = 20
 MIN_FRAMES = 15
@@ -14,20 +14,20 @@ PASTAS = ["1", "2", "3", "4"]
 
 CONF_IA = 0.45
 
-# ================= SELEÇÃO DE HARDWARE =================
-USAR_GPU = False  # Mude para True se tiver acesso à GPU dedicada de 20GB
+
+USAR_GPU = False  
 
 if USAR_GPU:
     MAX_WORKERS = 6
     DEVICE_IA = 0
 else:
-    MAX_WORKERS = 2    # Reduzido na CPU para não fritar o processador em 1280px
+    MAX_WORKERS = 2   
     DEVICE_IA = "cpu"
-    # Otimizações exclusivas para execução em CPU
+
     torch.set_num_threads(4)
 
 MANTER_RESOLUCAO_ORIGINAL = True
-# =======================================================
+
 
 logging.basicConfig(
     filename=os.path.join(PASTA_BASE, "processamento_clips.txt"),
@@ -52,7 +52,7 @@ def processar_video(nome_pasta, video):
         print(f"[{nome_pasta}] ERRO AO ABRIR: {video}")
         return
 
-    # CORREÇÃO: Modelo carregado por thread para evitar erros de concorrência na memória
+    
     model_local = YOLO("yolo11n.pt")
 
     gravando = False
@@ -127,7 +127,7 @@ def processar_video(nome_pasta, video):
                         frames_com_pessoa = 0
                         frames_sem_pessoa = 0
     finally:
-        # Garante o fechamento dos arquivos mesmo se houver erro crítico no laço
+       
         cap.release()
         if out is not None:
             out.release()
@@ -140,8 +140,8 @@ def processar_video(nome_pasta, video):
     print(f"[{nome_pasta}] Finalizado: {video}")
 
 if __name__ == "__main__":
-    print(f"\n🚀 ALOCANDO HARDWARE... MODO: {'GPU' if USAR_GPU else 'CPU'}")
-    print("MAPEANDO ARQUIVOS DE VÍDEO...")
+    print(f"\n ALOCANDO HARDWARE... MODO: {'GPU' if USAR_GPU else 'CPU'}")
+   
     tarefas = []
 
     for pasta in PASTAS:
@@ -158,7 +158,7 @@ if __name__ == "__main__":
             tarefas.append((pasta, video))
 
     print(f"TOTAL DE VÍDEOS ENCONTRADOS: {len(tarefas)}")
-    print(f"PROCESSANDO COM MAX_WORKERS={MAX_WORKERS}... AGUARDE.")
+    
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = [
@@ -172,4 +172,4 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"Erro em uma das threads: {e}")
 
-    print("\n🏁 PROCESSO TOTAL DE CORTE CONCLUÍDO!")
+    print("\nPROCESSO TOTAL DE CORTE CONCLUÍDO!")
