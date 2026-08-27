@@ -1,116 +1,200 @@
 import os
-import time
 import json
-import cv2
-import torch
-import requests
+import time
+import logging
 from queue import Queue, Empty
-from threading import Thread
+from threading import Thread, Event
+
+import cv2
+import requests
+from requests.adapters import HTTPAdapter, Retry
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from ultralytics import YOLO
+from ultralytics import solutions
 
-# ==========================================
-# CONFIGURAÇÕES DE PERFORMANCE
-# ==========================================
-YOLO_MODEL = "yolov8n.pt"
-USE_GPU = False
-USE_HALF_PRECISION = True   # FP16 - só tem efeito em GPU
-IMG_SIZE = 640
-CONFIDENCE = 0.4
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("monitor_videos")
 
-# Em vez de rodar o YOLO em 100% dos frames, processa 1 a cada N.
-# Ex.: vídeo a 25 fps com TARGET_PROCESS_FPS = 5 -> FRAME_SKIP = 5
-TARGET_PROCESS_FPS = 3.0
-
-PASTA_VIDEOS = r"D:\Projeto/videos"
-EXTENSOES = ('.mp4', '.avi', '.mkv', '.mov')
-ARQUIVO_PROCESSADOS = os.path.join(PASTA_VIDEOS, ".processados.json")
-
-BASE_URL = "http://localhost:8080"
-URL_LOGIN = f"{BASE_URL}/api/auth/login"
-URL_RELATORIO = f"{BASE_URL}/api/relatorio"
-
-ADMIN_USUARIO = "root"
-ADMIN_SENHA = "1010"
-_token = None
-
-fila_videos = Queue()
-processados = set()
-
-# ==========================================
-# CARREGAMENTO DO MODELO (GPU/CPU explícito)
-# ==========================================
-_device = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
-_half = USE_HALF_PRECISION and _device == "cuda"
-
-print(f"[YOLO] Dispositivo selecionado: {_device.upper()}"
-      + (" (FP16)" if _half else ""))
-
-model = YOLO(YOLO_MODEL)
-model.to(_device)
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 
-def carregar_processados():
-    if os.path.exists(ARQUIVO_PROCESSADOS):
+class Config:
+    def __init__(self):
+        self.yolo_model = "yolov8s.pt"
+        self.use_gpu = False
+        self.use_half_precision = True
+        self.img_size = 640
+        self.confidence = 0.4
+
+        self.pasta_videos = r"D:/videos"
+        self.extensoes = (".mp4", ".avi", ".mkv", ".mov")
+        self.max_tentativas_estabilidade = 3
+
+        self.inverter_direcao_contagem = True
+
+        self.base_url = "http://127.0.0.1:8080"
+        self.admin_usuario = "root"
+        self.admin_senha = "1010"
+
+        self.arquivo_processados = os.path.join(self.pasta_videos, ".processados.json")
+        self.url_login = f"{self.base_url}/api/auth/login"
+        self.url_relatorio = f"{self.base_url}/api/relatorio"
+
+        self.max_tentativas_envio = 3
+        self.backoff_base_envio = 1.5
+
+
+CFG = Config()
+
+
+class ApiClient:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self._token = None
+        self._session = requests.Session()
+        retries = Retry(total=3, backoff_factor=0.5, status_forcelist=[502, 503, 504])
+        self._session.mount("http://", HTTPAdapter(max_retries=retries))
+        self._session.mount("https://", HTTPAdapter(max_retries=retries))
+
+        self.fila_eventos = Queue()
+        self._worker_envio = None
+
+    def autenticar(self):
+        log.info("Autenticando na API...")
         try:
-            with open(ARQUIVO_PROCESSADOS, "r") as f:
-                return set(json.load(f))
-        except Exception:
-            return set()
-    return set()
+            resp = self._session.post(
+                self.cfg.url_login,
+                json={"usuario": self.cfg.admin_usuario, "senha": self.cfg.admin_senha},
+                timeout=5,
+            )
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Erro na conexão de autenticação: {e}") from e
 
+        if resp.status_code != 200:
+            raise RuntimeError(f"Status {resp.status_code}: {resp.text}")
 
-def salvar_processados():
-    with open(ARQUIVO_PROCESSADOS, "w") as f:
-        json.dump(list(processados), f)
+        data = resp.json()
+        self._token = data.get("token")
+        log.info("Token obtido com sucesso (role: %s)", data.get("role"))
 
+    def enfileirar(self, tipo):
+        self.fila_eventos.put(tipo)
+        log.info("Evento %s colocado na fila (tamanho atual: %d)", tipo, self.fila_eventos.qsize())
 
-def obter_token() -> str:
-    print("[AUTH] Autenticando na API...")
-    try:
-        resp = requests.post(
-            URL_LOGIN,
-            json={"usuario": ADMIN_USUARIO, "senha": ADMIN_SENHA},
-            timeout=5
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            print(f"[AUTH] Token obtido com sucesso (role: {data.get('role')})")
-            return data.get("token")
-        raise RuntimeError(f"Status {resp.status_code}: {resp.text}")
-    except Exception as e:
-        raise RuntimeError(f"Erro na conexão de autenticação: {e}")
+    def _enviar_sincrono(self, tipo, retry=True):
+        headers = {"Authorization": f"Bearer {self._token}"}
+        try:
+            r = self._session.post(
+                self.cfg.url_relatorio,
+                json={"saidaEntrada": tipo},
+                headers=headers,
+                timeout=10,
+            )
+        except requests.exceptions.Timeout:
+            log.error("Timeout ao enviar %s para a API.", tipo)
+            return False
+        except requests.exceptions.RequestException as e:
+            log.error("Erro de conexão ao enviar %s: %s", tipo, e)
+            return False
 
-
-def enviar(tipo: str, retry: bool = True) -> None:
-    global _token
-    headers = {"Authorization": f"Bearer {_token}"}
-
-    try:
-        r = requests.post(
-            URL_RELATORIO,
-            json={"saidaEntrada": tipo},
-            headers=headers,
-            timeout=3
-        )
-        print(f"[API] {tipo} -> Status: {r.status_code}")
+        if r.status_code in (200, 201):
+            log.info("%s enviado com sucesso -> status %s", tipo, r.status_code)
+            return True
 
         if r.status_code == 401 and retry:
-            print("[AUTH] Token expirado, renovando...")
-            _token = obter_token()
-            enviar(tipo, retry=False)
-        elif r.status_code not in (200, 201):
-            print(f"[ERRO BACKEND]: {r.text}")
+            log.warning("Token expirado, renovando...")
+            try:
+                self.autenticar()
+            except RuntimeError as e:
+                log.error("Falha ao renovar token: %s", e)
+                return False
+            return self._enviar_sincrono(tipo, retry=False)
 
-    except requests.exceptions.RequestException as e:
-        print(f"[ERRO API]: {e}")
+        log.error("Erro no backend ao enviar %s: status %s - %s", tipo, r.status_code, r.text)
+        return False
+
+    def iniciar_worker(self, parar_event):
+        def _worker():
+            while True:
+                try:
+                    tipo = self.fila_eventos.get(timeout=1)
+                except Empty:
+                    if parar_event.is_set():
+                        break
+                    continue
+
+                sucesso = False
+                tentativa = 0
+                while not sucesso and tentativa < self.cfg.max_tentativas_envio:
+                    tentativa += 1
+                    sucesso = self._enviar_sincrono(tipo)
+                    if not sucesso and tentativa < self.cfg.max_tentativas_envio:
+                        espera = self.cfg.backoff_base_envio * tentativa
+                        log.warning(
+                            "Falha ao enviar %s (tentativa %d/%d). Nova tentativa em %.1fs...",
+                            tipo, tentativa, self.cfg.max_tentativas_envio, espera,
+                        )
+                        time.sleep(espera)
+
+                if not sucesso:
+                    log.error(
+                        "Falha definitiva ao enviar %s após %d tentativas. Evento descartado.",
+                        tipo, tentativa,
+                    )
+
+                self.fila_eventos.task_done()
+
+        self._worker_envio = Thread(target=_worker, daemon=True, name="EnvioEventosThread")
+        self._worker_envio.start()
+        log.info("Worker de envio de eventos iniciado.")
+
+    def aguardar_fila_eventos(self):
+        pendentes = self.fila_eventos.qsize()
+        if pendentes:
+            log.info("Aguardando %d evento(s) pendente(s) na fila antes de encerrar...", pendentes)
+        self.fila_eventos.join()
+        log.info("Fila de eventos esvaziada.")
 
 
-def arquivo_estavel(caminho, checagens=3, intervalo=1.0):
+class RegistroProcessados:
+    def __init__(self, caminho):
+        self.caminho = caminho
+        self._itens = self._carregar()
+
+    def _carregar(self):
+        if os.path.exists(self.caminho):
+            try:
+                with open(self.caminho, "r", encoding="utf-8") as f:
+                    return set(json.load(f))
+            except (json.JSONDecodeError, OSError) as e:
+                log.warning("Não foi possível ler %s (%s); começando do zero.", self.caminho, e)
+        return set()
+
+    def contem(self, arquivo):
+        return arquivo in self._itens
+
+    def marcar(self, arquivo):
+        self._itens.add(arquivo)
+        self._salvar()
+
+    def _salvar(self):
+        tmp = f"{self.caminho}.tmp"
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(sorted(self._itens), f, indent=4, ensure_ascii=False)
+            os.replace(tmp, self.caminho)
+        except OSError as e:
+            log.error("Falha ao salvar registro de processados: %s", e)
+
+
+def arquivo_estavel(caminho, checagens=3, intervalo=1.0, tentativas_max=30):
     tamanho_anterior = -1
     estavel_count = 0
-    for _ in range(30):
+    for _ in range(tentativas_max):
         try:
             tamanho_atual = os.path.getsize(caminho)
         except OSError:
@@ -126,171 +210,199 @@ def arquivo_estavel(caminho, checagens=3, intervalo=1.0):
     return False
 
 
-def _calcular_frame_skip(cap: cv2.VideoCapture) -> int:
-    """Determina de quantos em quantos frames rodar o YOLO, baseado no FPS real do vídeo."""
-    video_fps = cap.get(cv2.CAP_PROP_FPS)
-    if not video_fps or video_fps <= 0:
-        video_fps = 25.0  # fallback razoável
+class ProcessadorVideo:
+    def __init__(self, cfg, api):
+        self.cfg = cfg
+        self.api = api
+        device = "cuda" if cfg.use_gpu else "cpu"
+        half = cfg.use_half_precision and device == "cuda"
+        log.info("Dispositivo selecionado: %s%s", device.upper(), " (FP16)" if half else "")
 
-    if TARGET_PROCESS_FPS <= 0:
-        return 1  # processa todos os frames
-
-    skip = max(1, round(video_fps / TARGET_PROCESS_FPS))
-    return skip
-
-
-def processar_video(caminho):
-    arquivo = os.path.basename(caminho)
-    print(f"\nProcessando: {arquivo}")
-
-    cap = cv2.VideoCapture(caminho)
-    if not cap.isOpened():
-        print("Erro ao abrir:", arquivo)
-        return
-
-    frame_skip = _calcular_frame_skip(cap)
-    print(f"[Perf] Frame skip = {frame_skip} (1 a cada {frame_skip} frames será analisado)")
-
-    historico_posicoes = {}
-    entradas = 0
-    saidas = 0
-    frame_idx = -1
-
-    t_inicio = time.monotonic()
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        frame_idx += 1
-
-        # Pula frames para reduzir custo de inferência.
-        # OBS: como o rastreamento (track) depende de continuidade entre frames,
-        # pular frames reduz um pouco a precisão de reidentificação, mas em troca
-        # de um ganho grande de velocidade — assim como já é feito no YOLOThread
-        # do sistema de captura em tempo real (TARGET_YOLO_FPS).
-        if frame_idx % frame_skip != 0:
-            continue
-
-        altura, largura, _ = frame.shape
-        LINE_Y = int(altura * 0.5)
-
-        results = model.track(
-            frame,
-            persist=True,
-            conf=CONFIDENCE,
-            imgsz=IMG_SIZE,
+        self._counter_kwargs = dict(
+            model=cfg.yolo_model,
             classes=[0],
-            device=_device,
-            quantize=(16 if _half else None),
+            conf=cfg.confidence,
+            imgsz=cfg.img_size,
+            device=device,
+            half=half,
+            show=False,
+            show_in=True,
+            show_out=True,
             verbose=False,
         )
 
-        if results[0].boxes is not None and results[0].boxes.id is not None:
-            boxes = results[0].boxes.xyxy.cpu().numpy()
-            ids = results[0].boxes.id.cpu().numpy().astype(int)
+    def processar(self, caminho):
+        arquivo = os.path.basename(caminho)
+        log.info("=" * 42)
+        log.info("Processando: %s", arquivo)
 
-            for box, track_id in zip(boxes, ids):
-                x1, y1, x2, y2 = map(int, box)
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
+        cap = cv2.VideoCapture(caminho)
+        if not cap.isOpened():
+            log.error("Não foi possível abrir: %s", arquivo)
+            return False
 
-                estado_atual = 'fora' if cy > LINE_Y else 'dentro'
+        try:
+            video_fps = cap.get(cv2.CAP_PROP_FPS) or 0
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            largura = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            altura = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            duracao = (total_frames / video_fps) if video_fps > 0 else 0
 
-                if track_id in historico_posicoes:
-                    estado_anterior = historico_posicoes[track_id]
+            log.info(
+                "Metadados: FPS=%.2f Frames=%d Resolução=%dx%d Duração=%.2fs",
+                video_fps, total_frames, largura, altura, duracao,
+            )
 
-                    if estado_anterior == 'fora' and estado_atual == 'dentro':
-                        entradas += 1
-                        print(f">>> [ID {track_id}] Entrada detectada")
-                        enviar("ENTRADA")
+            linha_contagem = [(0, int(altura * 0.5)), (largura, int(altura * 0.5))]
+            counter = solutions.ObjectCounter(region=linha_contagem, **self._counter_kwargs)
 
-                    elif estado_anterior == 'dentro' and estado_atual == 'fora':
-                        saidas += 1
-                        print(f">>> [ID {track_id}] Saída detectada")
-                        enviar("SAIDA")
+            in_anterior = 0
+            out_anterior = 0
+            contagens = {"ENTRADA": 0, "SAIDA": 0}
+            frame_idx = -1
+            t_inicio = time.monotonic()
 
-                historico_posicoes[track_id] = estado_atual
+            if self.cfg.inverter_direcao_contagem:
+                rotulo_in, rotulo_out = "SAIDA", "ENTRADA"
+            else:
+                rotulo_in, rotulo_out = "ENTRADA", "SAIDA"
 
-    cap.release()
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frame_idx += 1
 
-    duracao = time.monotonic() - t_inicio
-    print(f"[Concluído] {arquivo} | Entradas: {entradas} | Saídas: {saidas} | Tempo: {duracao:.1f}s")
+                resultado = counter(frame)
+                in_count = resultado.in_count
+                out_count = resultado.out_count
 
-    processados.add(arquivo)
-    salvar_processados()
+                if in_count > in_anterior:
+                    tempo_frame = (frame_idx / video_fps) if video_fps > 0 else 0
+                    log.info("%s detectada | frame %d | %.2fs", rotulo_in, frame_idx, tempo_frame)
+                    self.api.enfileirar(rotulo_in)
+                    contagens[rotulo_in] = in_count
+                    in_anterior = in_count
+
+                if out_count > out_anterior:
+                    tempo_frame = (frame_idx / video_fps) if video_fps > 0 else 0
+                    log.info("%s detectada | frame %d | %.2fs", rotulo_out, frame_idx, tempo_frame)
+                    self.api.enfileirar(rotulo_out)
+                    contagens[rotulo_out] = out_count
+                    out_anterior = out_count
+
+                if total_frames > 0 and video_fps > 0 and frame_idx % max(1, int(video_fps)) == 0:
+                    progresso = (frame_idx / total_frames) * 100
+                    log.info("Progresso: %.1f%% (frame %d/%d)", progresso, frame_idx, total_frames)
+
+            duracao_processamento = time.monotonic() - t_inicio
+            log.info("Concluído: %s | entradas=%d saídas=%d tempo=%.1fs",
+                      arquivo, contagens["ENTRADA"], contagens["SAIDA"], duracao_processamento)
+            return True
+
+        except Exception:
+            log.exception("Falha ao processar %s", arquivo)
+            return False
+        finally:
+            cap.release()
 
 
 class NovoVideoHandler(FileSystemEventHandler):
+    def __init__(self, fila, extensoes):
+        self.fila = fila
+        self.extensoes = extensoes
+
     def on_created(self, event):
-        if event.is_directory:
-            return
-        if event.src_path.lower().endswith(EXTENSOES):
-            fila_videos.put(event.src_path)
+        if not event.is_directory and event.src_path.lower().endswith(self.extensoes):
+            self.fila.put(event.src_path)
 
     def on_moved(self, event):
-        if event.is_directory:
-            return
-        if event.dest_path.lower().endswith(EXTENSOES):
-            fila_videos.put(event.dest_path)
+        if not event.is_directory and event.dest_path.lower().endswith(self.extensoes):
+            self.fila.put(event.dest_path)
 
 
-def worker():
-    while True:
+def worker(fila, registro, processador, parar, cfg):
+    tentativas_instabilidade = {}
+    ultimo_log=time.monotonic()
+
+    while not parar.is_set():
         try:
-            caminho = fila_videos.get(timeout=2)
+            caminho = fila.get(timeout=2)
         except Empty:
+            if time.monotonic() - ultimo_log >= 30:
+                log.info("Nenhum vídeo novo")
+                ultimo_log = time.monotonic()
             continue
+            
+            
 
         arquivo = os.path.basename(caminho)
-        if arquivo in processados:
-            fila_videos.task_done()
-            continue
 
-        if not os.path.exists(caminho):
-            fila_videos.task_done()
+        if registro.contem(arquivo) or not os.path.exists(caminho):
+            fila.task_done()
             continue
 
         if not arquivo_estavel(caminho):
-            print(f"[AVISO] Arquivo não estabilizou, reenfileirando: {arquivo}")
-            fila_videos.put(caminho)
-            time.sleep(2)
-            fila_videos.task_done()
+            tentativas_instabilidade[arquivo] = tentativas_instabilidade.get(arquivo, 0) + 1
+            if tentativas_instabilidade[arquivo] >= cfg.max_tentativas_estabilidade:
+                log.error("Desistindo de %s após %d tentativas (arquivo nunca estabilizou).",
+                          arquivo, tentativas_instabilidade[arquivo])
+                fila.task_done()
+                continue
+            log.warning("Arquivo não estabilizou, reenfileirando: %s (tentativa %d)",
+                        arquivo, tentativas_instabilidade[arquivo])
+            fila.put(caminho)
+            fila.task_done()
             continue
 
-        processar_video(caminho)
-        fila_videos.task_done()
+        sucesso = processador.processar(caminho)
+        if sucesso:
+            registro.marcar(arquivo)
+        else:
+            log.error("%s não foi marcado como processado; será tentado novamente na próxima execução.", arquivo)
+        fila.task_done()
 
 
 def main():
-    global _token, processados
+    cfg = CFG
+    api = ApiClient(cfg)
+    parar = Event()
 
     try:
-        _token = obter_token()
+        api.autenticar()
     except RuntimeError as e:
-        print(f"[ERRO CRÍTICO] {e}")
-        exit(1)
+        log.critical("%s", e)
+        raise SystemExit(1)
 
-    processados = carregar_processados()
+    api.iniciar_worker(parar)
 
-    for arquivo in os.listdir(PASTA_VIDEOS):
-        if arquivo.lower().endswith(EXTENSOES) and arquivo not in processados:
-            fila_videos.put(os.path.join(PASTA_VIDEOS, arquivo))
+    registro = RegistroProcessados(cfg.arquivo_processados)
+    processador = ProcessadorVideo(cfg, api)
 
-    Thread(target=worker, daemon=True).start()
+    fila = Queue()
+
+    for arquivo in os.listdir(cfg.pasta_videos):
+        if arquivo.lower().endswith(cfg.extensoes) and not registro.contem(arquivo):
+            fila.put(os.path.join(cfg.pasta_videos, arquivo))
+
+    thread_worker = Thread(
+        target=worker, args=(fila, registro, processador, parar, cfg), daemon=True
+    )
+    thread_worker.start()
 
     observer = Observer()
-    observer.schedule(NovoVideoHandler(), PASTA_VIDEOS, recursive=False)
+    observer.schedule(NovoVideoHandler(fila, cfg.extensoes), cfg.pasta_videos, recursive=False)
     observer.start()
 
-    print(f"[SERVIÇO] Monitorando {PASTA_VIDEOS} continuamente...")
-
+    log.info("Monitorando %s continuamente...", cfg.pasta_videos)
     try:
         while True:
             time.sleep(5)
     except KeyboardInterrupt:
+        log.info("Encerrando...")
+        parar.set()
         observer.stop()
+        api.aguardar_fila_eventos()
     observer.join()
 
 
