@@ -14,7 +14,7 @@
     # ==========================================
 
     pastas_videos = [
-        r"C:\Users\matheus-lopes\Desktop\clps"
+        r"D:\Projeto\videos"
     ]
 
     extensoes = (
@@ -42,14 +42,7 @@
     # GABARITO (caminho fixo)
     # ==========================================
 
-    arquivo_manual = os.path.join(
-        pasta_script,
-        "manual.txt"
-    )
-
-    # Cria o arquivo manual vazio se não existir
-    if not os.path.exists(arquivo_manual):
-        open(arquivo_manual, "w", encoding="utf-8").close()
+    
 
     # ==========================================
     # PROCESSAMENTO

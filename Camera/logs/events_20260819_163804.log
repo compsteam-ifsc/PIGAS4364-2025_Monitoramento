@@ -1,0 +1,48 @@
+2026-08-19 16:38:04 [INFO] ============================================================
+2026-08-19 16:38:04 [INFO] SISTEMA DE VIGILÂNCIA RTSP 24/7 INICIADO
+2026-08-19 16:38:04 [INFO] ============================================================
+2026-08-19 16:38:04 [INFO] [CaptureThread] Iniciada.
+2026-08-19 16:38:04 [INFO] [YOLOThread] Iniciada.
+2026-08-19 16:38:04 [INFO] [YOLO] Carregando modelo: yolo11s.pt em CPU
+2026-08-19 16:38:04 [INFO] [RecordThread] Iniciada.
+2026-08-19 16:38:04 [INFO] [YOLO] Carregamento concluído.
+2026-08-19 16:38:14 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.19 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:38:24 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.19 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:38:34 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.19 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:38:44 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.42 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:38:54 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.42 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:39:04 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.37 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:39:14 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.37 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:39:24 [INFO] 
+[Métricas] RTSP: OFF | Câmera FPS: 25.0 | RAM: 294.37 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 0/5 (Drops: 0)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)

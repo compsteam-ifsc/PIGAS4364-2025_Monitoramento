@@ -43,9 +43,11 @@ public String salvar(@RequestBody Map<String, String> body) {
         Cndb registro = new Cndb();
         registro.setDiaHorario(LocalDateTime.now());
         registro.setSaidaEntrada(enumValue);
+//System.out.println("Recebido: " + tipo);
+//System.out.println("Antes do save...");
 
         repo.save(registro);
-
+//System.out.println("Depois do save...");
         return "Salvo com sucesso";
 
     } catch (Exception e) {

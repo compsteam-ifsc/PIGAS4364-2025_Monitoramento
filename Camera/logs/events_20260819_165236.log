@@ -1,0 +1,36 @@
+2026-08-19 16:52:36 [INFO] ============================================================
+2026-08-19 16:52:36 [INFO] SISTEMA DE VIGILÂNCIA RTSP 24/7 INICIADO
+2026-08-19 16:52:36 [INFO] ============================================================
+2026-08-19 16:52:36 [INFO] [CaptureThread] Iniciada.
+2026-08-19 16:52:36 [INFO] [YOLOThread] Iniciada.
+2026-08-19 16:52:36 [INFO] [YOLO] Carregando modelo: yolo11s.pt em CPU
+2026-08-19 16:52:36 [INFO] [RecordThread] Iniciada.
+2026-08-19 16:52:36 [INFO] [YOLO] Carregamento concluído.
+2026-08-19 16:52:38 [INFO] [Câmera] Conectado ao RTSP: rtsp://Projeto:projeto1@192.168.0.102:554/stream1 | Resolução: 1920x1080 | FPS: 15.00
+2026-08-19 16:52:46 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 16.9 | RAM: 1345.00 MB | CPU
+           Filas -> Cap: 0/200 (Drops: 0) | YOLO: 2/5 (Drops: 7)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:52:56 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 15.7 | RAM: 1285.37 MB | CPU
+           Filas -> Cap: 0/200 (Drops: 0) | YOLO: 0/5 (Drops: 7)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:53:06 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 15.2 | RAM: 1288.86 MB | CPU
+           Filas -> Cap: 0/200 (Drops: 0) | YOLO: 5/5 (Drops: 7)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:53:16 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 15.0 | RAM: 1282.48 MB | CPU
+           Filas -> Cap: 0/200 (Drops: 0) | YOLO: 5/5 (Drops: 17)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:53:19 [DEBUG] [YOLO] Detectado frame 1/5. Aguardando confirmação.
+2026-08-19 16:53:22 [DEBUG] [YOLO] Falso positivo descartado. Voltando para IDLE.
+2026-08-19 16:53:26 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 15.0 | RAM: 1268.32 MB | CPU
+           Filas -> Cap: 0/200 (Drops: 0) | YOLO: 5/5 (Drops: 27)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)

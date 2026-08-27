@@ -1,0 +1,19 @@
+2026-08-19 16:12:17 [INFO] ============================================================
+2026-08-19 16:12:17 [INFO] SISTEMA DE VIGILÂNCIA RTSP 24/7 INICIADO
+2026-08-19 16:12:17 [INFO] ============================================================
+2026-08-19 16:12:17 [INFO] [CaptureThread] Iniciada.
+2026-08-19 16:12:17 [INFO] [YOLOThread] Iniciada.
+2026-08-19 16:12:17 [INFO] [RecordThread] Iniciada.
+2026-08-19 16:12:17 [INFO] [YOLO] Carregando modelo: yolo11s.pt em CPU
+2026-08-19 16:12:17 [INFO] [YOLO] Carregamento concluído.
+2026-08-19 16:12:19 [INFO] [Câmera] Conectado ao RTSP: rtsp://Projeto:projeto1@192.168.0.102:554/stream1 | Resolução: 1920x1080 | FPS: 15.00
+2026-08-19 16:12:27 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 16.8 | RAM: 1369.45 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 4/5 (Drops: 23)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)
+2026-08-19 16:12:37 [INFO] 
+[Métricas] RTSP: OK | Câmera FPS: 15.7 | RAM: 1335.77 MB | CPU
+           Filas -> Cap: 0/100 (Drops: 0) | YOLO: 4/5 (Drops: 49)
+           Estado: IDLE (Detecções ativas: 0)
+           Restarts: Cap(0), YOLO(0), Rec(0)

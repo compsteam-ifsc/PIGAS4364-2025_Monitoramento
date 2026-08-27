@@ -27,105 +27,14 @@ PASTA_VIDEOS = r"D:\Projeto/videos"
 EXTENSOES = ('.mp4', '.avi', '.mkv', '.mov')
 ARQUIVO_PROCESSADOS = os.path.join(PASTA_VIDEOS, ".processados.json")
 
-BASE_URL = "http://localhost:8080"
-URL_LOGIN = f"{BASE_URL}/api/auth/login"
-URL_RELATORIO = f"{BASE_URL}/api/relatorio"
 
-ADMIN_USUARIO = "root"
-ADMIN_SENHA = "1010"
-_token = None
 
-fila_videos = Queue()
-processados = set()
 
-# ==========================================
-# CARREGAMENTO DO MODELO (GPU/CPU explícito)
-# ==========================================
-_device = "cuda" if (USE_GPU and torch.cuda.is_available()) else "cpu"
-_half = USE_HALF_PRECISION and _device == "cuda"
 
-print(f"[YOLO] Dispositivo selecionado: {_device.upper()}"
-      + (" (FP16)" if _half else ""))
+
+
 
 model = YOLO(YOLO_MODEL)
-model.to(_device)
-
-
-def carregar_processados():
-    if os.path.exists(ARQUIVO_PROCESSADOS):
-        try:
-            with open(ARQUIVO_PROCESSADOS, "r") as f:
-                return set(json.load(f))
-        except Exception:
-            return set()
-    return set()
-
-
-def salvar_processados():
-    with open(ARQUIVO_PROCESSADOS, "w") as f:
-        json.dump(list(processados), f)
-
-
-def obter_token() -> str:
-    print("[AUTH] Autenticando na API...")
-    try:
-        resp = requests.post(
-            URL_LOGIN,
-            json={"usuario": ADMIN_USUARIO, "senha": ADMIN_SENHA},
-            timeout=5
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            print(f"[AUTH] Token obtido com sucesso (role: {data.get('role')})")
-            return data.get("token")
-        raise RuntimeError(f"Status {resp.status_code}: {resp.text}")
-    except Exception as e:
-        raise RuntimeError(f"Erro na conexão de autenticação: {e}")
-
-
-def enviar(tipo: str, retry: bool = True) -> None:
-    global _token
-    headers = {"Authorization": f"Bearer {_token}"}
-
-    try:
-        r = requests.post(
-            URL_RELATORIO,
-            json={"saidaEntrada": tipo},
-            headers=headers,
-            timeout=3
-        )
-        print(f"[API] {tipo} -> Status: {r.status_code}")
-
-        if r.status_code == 401 and retry:
-            print("[AUTH] Token expirado, renovando...")
-            _token = obter_token()
-            enviar(tipo, retry=False)
-        elif r.status_code not in (200, 201):
-            print(f"[ERRO BACKEND]: {r.text}")
-
-    except requests.exceptions.RequestException as e:
-        print(f"[ERRO API]: {e}")
-
-
-def arquivo_estavel(caminho, checagens=3, intervalo=1.0):
-    tamanho_anterior = -1
-    estavel_count = 0
-    for _ in range(30):
-        try:
-            tamanho_atual = os.path.getsize(caminho)
-        except OSError:
-            return False
-        if tamanho_atual == tamanho_anterior and tamanho_atual > 0:
-            estavel_count += 1
-            if estavel_count >= checagens:
-                return True
-        else:
-            estavel_count = 0
-        tamanho_anterior = tamanho_atual
-        time.sleep(intervalo)
-    return False
-
-
 def _calcular_frame_skip(cap: cv2.VideoCapture) -> int:
     """Determina de quantos em quantos frames rodar o YOLO, baseado no FPS real do vídeo."""
     video_fps = cap.get(cv2.CAP_PROP_FPS)
@@ -181,11 +90,15 @@ def processar_video(caminho):
             persist=True,
             conf=CONFIDENCE,
             imgsz=IMG_SIZE,
-            classes=[0],
-            device=_device,
-            quantize=(16 if _half else None),
+            classes=[0], 
             verbose=False,
+            
         )
+        frame_desenhado = results[0].plot()
+
+
+        cv2.imshow("YOLO Tracking", frame_desenhado)
+        
 
         if results[0].boxes is not None and results[0].boxes.id is not None:
             boxes = results[0].boxes.xyxy.cpu().numpy()
@@ -215,11 +128,8 @@ def processar_video(caminho):
 
     cap.release()
 
-    duracao = time.monotonic() - t_inicio
-    print(f"[Concluído] {arquivo} | Entradas: {entradas} | Saídas: {saidas} | Tempo: {duracao:.1f}s")
-
-    processados.add(arquivo)
-    salvar_processados()
+   
+    
 
 
 class NovoVideoHandler(FileSystemEventHandler):
@@ -295,4 +205,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    processar_video(r"D:\Projeto\videos\clip_20260821_001325.mp4")

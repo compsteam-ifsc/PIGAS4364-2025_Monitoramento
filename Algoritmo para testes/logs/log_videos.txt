@@ -122,3 +122,11 @@ INICIO PROCESSAMENTO - 2026-06-25 16:06:43.970622
 tapo_2026-04-29_17-06-00_clipe___0000001.mp4: Entradas=1 | Saidas=0
 tapo_2026-04-29_17-06-00_clipe___0000003.mp4: Entradas=1 | Saidas=0
 tapo_2026-04-29_17-06-00_clipe___0000004.mp4: Entradas=0 | Saidas=0
+clip_20260821_001325.mp4: Entradas=0 | Saidas=0
+clip_20260821_001325.mp4: Entradas=0 | Saidas=0
+clip_20260821_001325.mp4: Entradas=0 | Saidas=0
+clip_20260820_160235.mp4: Entradas=1 | Saidas=1
+clip_20260820_160542.mp4: Entradas=0 | Saidas=1
+clip_20260821_001325.mp4: Entradas=0 | Saidas=0
+clip_20260826_062617.mp4: Entradas=1 | Saidas=0
+clip_20260826_062617.mp4: Entradas=1 | Saidas=0
